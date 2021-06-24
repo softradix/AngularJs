@@ -1,0 +1,153 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<form [formGroup]="proponentForm" (ngSubmit)="addEditQuotesButtonClicked(pageMode)">
+  <div class="form-check form-check-inline mb-4">
+    <input class="form-check-input" type="radio" name="customer_type" id="customer_type_2"
+      formControlName="customer_type" value="2" (click)="onChangeCutomerType(2)"
+      [attr.disabled]="pageMode == 'editMode' ? '' : null" />
+    <label class="form-check-label" for="customer_type_2">
+      Seguro para Pessoa Jurídica
+    </label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="customer_type" id="customer_type_1"
+      formControlName="customer_type" value="1" (click)="onChangeCutomerType(1)"
+      [attr.disabled]="pageMode == 'editMode' ? '' : null" />
+    <label class="form-check-label" for="customer_type_1">
+      Seguro para Individuo
+    </label>
+  </div>
+  <div class="form-row mb-4">
+    <div class="col-sm-6">
+      <label for="">{{ labelName }}</label>
+      <input type="text" class="form-control" formControlName="customer_company_name" placeholder="Digite o nome" />
+      <show-errors [control]="proponentForm.controls.customer_company_name"></show-errors>
+    </div>
+    <div class="col-sm-6" *ngIf="proponentForm.value.customer_type == 1">
+      <label for="">CPF</label>
+      <input [textMask]="{ mask: maskcpf }" type="text" class="form-control" formControlName="cpf"
+        placeholder="Digite o CPF" [attr.disabled]="pageMode == 'editMode' ? '' : null" />
+      <show-errors [control]="proponentForm.controls.cpf"></show-errors>
+    </div>
+    <div class="col-sm-6" *ngIf="proponentForm.value.customer_type == 2">
+      <label for="">CNPJ</label>
+      <input [textMask]="{ mask: maskcnpj }" type="text" class="form-control" formControlName="cnpj"
+        placeholder="Digite o CNPJ" (blur)="cnpjValidate(proponentForm.value.cnpj)"
+        [attr.disabled]="pageMode == 'editMode' ? '' : null" />
+      <show-errors [control]="proponentForm.controls.cnpj"></show-errors>
+    </div>
+  </div>
+  <div class="form-row mb-4">
+    <div class="col-sm-6">
+      <label for="">Email</label>
+      <input type="email" class="form-control" formControlName="email" placeholder="Digite o endereco de email"
+        autocomplete="email" />
+      <show-errors [control]="proponentForm.controls.email"></show-errors>
+    </div>
+    <div class="col-sm-6">
+      <label for="">{{proponentForm.value.customer_type == 2 ? 'Telefone com DDD' : 'Celular com DDD'}}</label>
+      <input type="text" class="form-control" [textMask]="{ mask: mask }" formControlName="phone"
+        placeholder="{{proponentForm.value.customer_type == 2 ? 'Telefone com DDD' : 'Celular com DDD'}}" />
+      <show-errors [control]="proponentForm.controls.phone"></show-errors>
+    </div>
+  </div>
+
+  <div class="form-row mb-4">
+    <div class="col-sm-6 zip-code" *ngIf="proponentForm.value.customer_type == 1">
+      <label for="">Data de Nascimento</label>
+      <input type="text" mask="d0/M0/0000" [leadZeroDateTime]="true" formControlName="date_of_birth"
+        class="form-control" placeholder="Data de Nascimento"
+        (blur)="setDatePickerValueOnChange(proponentForm.value.date_of_birth)" />
+      <show-errors [control]="proponentForm.controls.date_of_birth"></show-errors>
+    </div>
+    <div class="col-sm-6 cro-code">
+      <label for="">Número de Registro Profissional</label>
+      <input type="text" class="form-control" placeholder="EX: CRM, CRO..." formControlName="cro"/>
+      <show-errors [control]="proponentForm.controls.cro"></show-errors>
+    </div>
+  </div>
+  <div class="form-row mb-4">
+    <div class="col-sm-6 zip-code">
+      <label for="">CEP</label>
+      <input type="text" class="form-control" placeholder="Digite seu CEP" formControlName="zip_code"
+        (blur)="getAddress(proponentForm.value.zip_code)" />
+      <show-errors [control]="proponentForm.controls.zip_code"></show-errors>
+    </div>
+    <div *ngIf="showHideAddress" class="col-sm-6">
+      <label for="">Endereço</label>
+      <input type="text" class="form-control" placeholder="Digite seu Endereço" formControlName="customer_address" />
+      <show-errors [control]="proponentForm.controls.customer_address"></show-errors>
+    </div>
+  </div>
+  <div *ngIf="showHideAddress" class="form-row mb-3">
+    <div class="col-sm-6">
+      <label for="">Número</label>
+      <input #customer_address_number type="text" class="form-control" placeholder="806" formControlName="customer_address_number" />
+      <show-errors [control]="proponentForm.controls.customer_address_number"></show-errors>
+    </div>
+    <div class="col-sm-6">
+      <label for="">Complemento</label>
+      <input type="text" class="form-control" id="" placeholder="Complemento"
+        formControlName="customer_address_add_info" />
+      <show-errors [control]="proponentForm.controls.customer_address_add_info"></show-errors>
+    </div>
+  </div>
+  <div *ngIf="showHideAddress" class="form-row mb-3">
+    <div class="col-sm-6">
+      <label for="">Bairro</label>
+      <input type="text" class="form-control" placeholder="Digite seu Bairro" formControlName="district" />
+      <show-errors [control]="proponentForm.controls.district"></show-errors>
+    </div>
+    <div class="col-sm-6">
+      <label for="">UF</label>
+      <input type="text" class="form-control" placeholder="Digite seu UF" formControlName="state" />
+      <show-errors [control]="proponentForm.controls.state"></show-errors>
+    </div>
+  </div>
+  <div *ngIf="showHideAddress" class="form-row mb-3">
+    <div class="col-sm-6">
+      <label for="">Cidade</label>
+      <input type="text" class="form-control" placeholder="Digite seu cidade" formControlName="city" />
+      <show-errors [control]="proponentForm.controls.city"></show-errors>
+    </div>
+  </div>
+  <div class="form-row d-inline-flex">
+    <div class="col-sm-6 pr-0">
+      <button class="btn btn-primary w-100 save-btn" type="submit">
+        PROSSEGUIR PARA PRODUTO
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Share Pagamento Start -->
+<button class="btn btn-primary mt-3 d-none" id="alertCNPJButton" (click)="openModel(alertCNPJ, 'alertCNPJ')">
+  Share Button
+</button>
+<ng-template #alertCNPJ>
+  <div class="share-link-pop-up instill-modal">
+    <div class="modal-header header-quotes bg-secondary">
+      <h3 class="modal-title" id="exampleModalLongTitle">
+        ATENÇĀO <img style="vertical-align: initial;" src="../../../../assets/images/alert.svg" alt="" />
+      </h3>
+      <button data-dismiss="modal" aria-label="Close" (click)="closeModal()" class="btn btn-light">
+        <img src="../../../../assets/images/close-button-white.svg" alt="" />
+      </button>
+    </div>
+    <div class="pop-search">
+      <div class="modal-body">
+        <div class="form-group">
+          <span class="mb-3 d-block">
+            <b>CPF/CNP já cadastrado</b>
+          </span>
+          <p class="mt-2">
+            Ja existe uma Cotaçāo de Seguro para este CPF/CNPJ registrada em nossa Plataforma.
+          </p>
+          <p>
+            A politica comercial da Fairfax permite que apenas um Corretor de Seguro tenha acesso as condições
+            Comerciais de cada Cliente. Em Caso de duvida, entre em contato com nossa equipe de Suporte.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

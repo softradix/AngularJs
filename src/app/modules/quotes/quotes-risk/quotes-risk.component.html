@@ -1,0 +1,242 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<form [formGroup]="riskForm" (ngSubmit)="createUpdateQuoteRisk()">
+  <div class="row mb-4">
+    <div class="col-sm-12">
+      <label for="">
+        Está contratando um seguro novo ou é uma renovação de outra Seguradora?
+      </label>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input seguro" type="radio" name="risk_three" id="risk_three"
+            formControlName="risk_three" value="true" (click)="isNewInsurance(1)"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Seguro Novo
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input renova" type="radio" name="risk_three" id="risk_three"
+            formControlName="risk_three" value="false" (click)="isNewInsurance(2)"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Renovação
+        </label>
+      </div>
+      <div class="outer-layer mt-3" *ngIf="riskForm.value.risk_three == 'false'">
+        <div class="d-flex flex-wrap">
+          <div class="arrow-up"></div>
+          <div class="quotesDatePicker col-lg-12 flex-wrap">
+            <div class="col-lg-6 align-self-start">
+              <input type="text" mask="d0/M0/0000" [leadZeroDateTime]="true" formControlName="date_of_first_contracting"
+                class="form-control" placeholder="Data final de vigência"
+                (blur)="setDatePickerValueOnChange('date_of_first_contracting', $event)" />
+              <show-errors [control]="riskForm.controls.date_of_first_contracting"></show-errors>
+            </div>
+            <div class="col-lg-6 align-self-start">
+              <input type="text" mask="d0/M0/0000" [leadZeroDateTime]="true" formControlName="continuity_Date"
+                class="form-control" placeholder="Data de continuidade"
+                (blur)="setDatePickerValueOnChange('continuity_Date', $event)" />
+              <show-errors [control]="riskForm.controls.continuity_Date"></show-errors>
+            </div>
+            <div class="col-lg-12 INFORMAR-NOME-DA mt-3">
+              <input class="form-control" formControlName='name_of_previous_insurer'
+                placeholder="INFORMAR NOME DA SEGURADORA ANTERIOR" type="text"
+                [attr.disabled]="pageMode == 'editMode' ? '' : null">
+              <show-errors [control]="riskForm.controls.name_of_previous_insurer"></show-errors>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3" *ngIf="riskForm.value.risk_three == 'true'">
+        <div class="col" style="min-width: 50%;">
+          <label for="">Selecione o período de retroatividade desejado</label>
+          <div class="select-boxes">
+            <ngx-select formControlName="retroactivity_id" [items]="retroactivityFilter"
+              (select)="valueChanged($event, 'retroactivity_id')"
+              placeholder="selecione o período de retroatividade desejado"
+              [disabled]="pageMode == 'editMode' ? true : false"
+              [ngClass]="pageMode == 'editMode' ? 'removeicons' : null">
+            </ngx-select>
+            <show-errors [control]="riskForm.controls.retroactivity_id"></show-errors>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3" *ngIf="customerType == 2">
+        <div class="col" style="min-width: 50%;">
+          <label for="">Faturamento do Último Exercício Fiscal Consolidado</label>
+          <div class="select-boxes">
+            <ngx-select formControlName="turnover_id" [items]="turnoverList"
+              (select)="valueChanged($event, 'turnover_id')"
+              placeholder="Selecione o faturamento do último exercício fiscal consolidado"
+              [disabled]="pageMode == 'editMode' ? true : false"
+              [ngClass]="pageMode == 'editMode' ? 'removeicons' : null">
+            </ngx-select>
+            <show-errors [control]="riskForm.controls.turnover_id"></show-errors>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3" *ngIf="customerType == 2 && professionId == 2">
+        <div class="col" style="min-width: 50%;">
+          <label for="">Organizações Específicas</label>
+          <div class="select-boxes">
+            <ngx-select formControlName="education_id" [items]="educationList"
+              (select)="valueChanged($event, 'education_id')"
+              placeholder="Selecione o Educação"
+              [disabled]="pageMode == 'editMode' ? true : false"
+              [ngClass]="pageMode == 'editMode' ? 'removeicons' : null">
+            </ngx-select>
+            <show-errors [control]="riskForm.controls.education_id"></show-errors>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-sm-12">
+      <label>O proponente já sofreu processos judiciais ou disciplinares por Ato Médico/Odontológico NOS ÚLTIMOS 24 MESES?
+      </label>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input" type="radio" name="risk_four" id="risk_four" formControlName="risk_four"
+            value="true" (click)="onCheckRadio(true, 'risk_four')"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Sim
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input" type="radio" name="risk_four" id="risk_four" formControlName="risk_four"
+            value="false" (click)="onCheckRadio(false, 'risk_four')"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Não
+        </label>
+      </div>
+      <div class="w-100 mt-2" style="min-width: 50%;" *ngIf="riskForm.value.risk_four == 'true'">
+        <div class="select-boxes">
+          <ngx-select [items]="complaintsListFilter" formControlName="complaint_id"
+            placeholder="Selecione INFORMAR QUANTIDADE" [ngClass]="pageMode == 'editMode' ? 'removeicons' : null"
+            (select)="valueChanged($event, 'complaint_id')" [disabled]="pageMode == 'editMode' ? true : false">
+          </ngx-select>
+          <show-errors [control]="riskForm.controls.complaint_id"></show-errors>
+        </div>
+      </div>
+      <textarea class="form-control w-100 mt-2" formControlName="risk_four_desc" rows="2" placeholder="Informe Detalhes"
+        [attr.disabled]="pageMode == 'editMode' ? '' : null"></textarea>
+      <show-errors [control]="riskForm.controls.risk_four_desc"></show-errors>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-sm-12">
+      <label>O proponente está ciente de algum fato ou situação que possa gerar a reclamação de algum terceiro como
+        resultado de um Ato Médico/Odontológico?
+      </label>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input" type="radio" name="risk_five" id="risk_five" formControlName="risk_five"
+            value="true" (click)="onCheckRadio(true, 'risk_five')"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Sim
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <label class="form-check-label">
+          <input class="form-check-input" type="radio" name="risk_five" id="risk_five" formControlName="risk_five"
+            value="false" (click)="onCheckRadio(false, 'risk_five')"
+            [attr.disabled]="pageMode == 'editMode' ? '' : null" />Não
+        </label>
+      </div>
+      <textarea class="form-control w-100 mt-2" formControlName="risk_five_desc" rows="2" placeholder="Informe Detalhes"
+        [attr.disabled]="pageMode == 'editMode' ? '' : null"></textarea>
+      <show-errors [control]="riskForm.controls.risk_five_desc"></show-errors>
+    </div>
+  </div>
+  <div class="form-row d-inline-flex">
+    <div class="col-sm-6">
+      <button class="btn btn-outline-primary w-100 save-btn" type="button" (click)="backStep()"> VOLTAR PARA
+        PRODUTO
+      </button>
+    </div>
+    <div class="col-sm-6 pr-0">
+      <button class="btn btn-primary w-100 save-btn" type="submit"> GERAR COTAÇĀO </button>
+    </div>
+  </div>
+</form>
+
+<button class="btn btn-primary mt-3 d-none" id="riskOutOfAcceptanceButton"
+  (click)="openModel(riskOutOfAcceptance, 'riskAcceptance')">Risk Out Of Acceptance</button>
+<ng-template #riskOutOfAcceptance>
+  <div class="instill-modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="exampleModalLongTitle">Risco fora de aceitação</h3>
+      <button data-dismiss="modal" aria-label="Close" (click)="closeModel('riskAcceptance')" class="btn btn-light">
+        <img src="../../../../assets/images/close-button.svg" alt="" />
+      </button>
+    </div>
+    <div class="pop-search">
+      <div class="modal-body">
+        <p>
+          Infelizmente estamos impossibilitados de apresentar uma cotação para este risco.
+        </p>
+        <p>
+          Para maiores informações, entre em contato com a área suporte.
+        </p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-primary col-6" data-dismiss="modal" aria-label="Close"
+          (click)="closeModel('riskAcceptance')">
+          CANCELAR
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<button class="btn btn-primary mt-3 d-none" id="quoteListButton" (click)="openModel(quotesList, 'quoteList')">Quote
+  List</button>
+
+<ng-template #quotesList>
+  <div class="instill-modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="exampleModalLongTitle">EMITIR APÓLICE</h3>
+      <button data-dismiss="modal" aria-label="Close" (click)="closeModel('quoteList')" class="btn btn-light">
+        <img src="../../../../assets/images/close-button.svg" alt="" />
+      </button>
+    </div>
+    <div class="pop-search">
+      <form [formGroup]="quoteListForm" (ngSubmit)="createProposal()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Emita uma nova Apólice a partir de uma cotação</label>
+            <ngx-select formControlName="quote_id" [items]="quoteListArray" placeholder="Selecione a cotação"
+              (select)="valueChanged($event, 'quote_id')">
+            </ngx-select>
+            <show-errors [control]="quoteListForm.controls.quote_id"></show-errors>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-outline-primary col-6" data-dismiss="modal" aria-label="Close"
+            (click)="closeModel('quoteList')">
+            CANCELAR
+          </button>
+          <button type="submit" class="btn btn-primary col">
+            CRIAR
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-template>
+
+<!--Quote Details Start-->
+<button class="btn btn-primary mt-3 d-none" id="quoteDetailsButton"
+  (click)="openModel(quoteDetail, 'quoteDetails')">Quote
+  Details</button>
+
+<ng-template #quoteDetail>
+  <div class="large-pop-up">
+    <div class="view-detail-model" *ngIf="showHideDetails">
+      <app-quote-details [quotesData]='quotesDetailsData'></app-quote-details>
+      <div class="d-flex justify-content-center mb-3 transmit-action-btns">
+        <button class="btn btn-light mr-3" (click)="closeQuoteDetailModal()"
+          style="min-width:210px;height: 50px;">FECHAR</button>
+        <button class="btn btn-primary" (click)="addProposal()" [attr.disabled]="buttonblock ? '' : null ">EMITIR
+          APÓLICE</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<!--Quote Details End-->

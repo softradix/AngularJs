@@ -1,0 +1,63 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<div class="body-wrapper corretores"
+    [ngClass]="currentUser.role_id == 3 || currentUser.role_id == 4 || currentUser.role_id == 5 ? 'admin-wrapper' : ''">
+    <div class="row no-gutters justify-content-between">
+        <div class="title col-sm-5">
+            <h2>Seguradoras</h2>
+            <p>
+                Veja todos os usuários cadastrados na sua plataforma.
+            </p>
+        </div>
+        <div class="button-group d-flex align-items-center">
+            <button type="button" class="btn btn-outline-primary" (click)="exportCompanyList('export')">
+                Exporto Como CSV
+            </button>
+            <button class="btn btn-primary" routerLink="/company/add">
+                Addictionar Novo Seguradoras
+            </button>
+        </div>
+    </div>
+    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+        <div class="position-relative user-list">
+            <div class="position-relative">
+                <table id="company-list" style="width: 100%;" cellspacing="0"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="btn btn-primary d-none" id="rejectResonButton" (click)="openRejectReasonModel(rejectUserModal)"></button>
+
+<ng-template #rejectUserModal>
+    <div class="instill-modal">
+        <div class="modal-header bg-secondary">
+            <h3 class="modal-title" id="exampleModalLongTitle">Rejeitar a razão</h3>
+            <button data-dismiss="modal" aria-label="Close" (click)="closeRejectUserModel()"
+                class="btn close btn-secondary">
+                <img src="../../../../assets/images/white-close.svg" alt="" />
+            </button>
+        </div>
+        <div class="pop-search">
+            <form [formGroup]="rejectResonForm" (ngSubmit)="rejectUser()">
+                <div class="modal-body pb-0">
+                    <div class="">
+                        <textarea class="form-control" formControlName="message" placeholder="Selecione a cotação"
+                            rows="4"></textarea>
+                        <show-errors [control]="rejectResonForm.controls.message"></show-errors>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-outline-primary col-6" data-dismiss="modal" aria-label="Close"
+                        (click)="closeRejectUserModel()">
+                        CANCELAR
+                    </button>
+                    <button type="submit" class="btn btn-primary col">
+                        Rejeitar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</ng-template>
+
+<app-confirm-dialog [confirmDialogParms]="{ title: 'Remove Corretor', button: 'REMOVER' }"></app-confirm-dialog>

@@ -1,0 +1,54 @@
+#Layer_1 {
+  fill: #3b55e6;
+}
+
+.up-carret {
+  position: relative;
+  height: 13px;
+  text-align: center;
+
+  #Capa_1 {
+    fill: #f3f3f3;
+  }
+}
+
+.select-boxes {
+  position: relative;
+}
+
+.select-retro {
+  height: 50px !important;
+  border-color: #3b55e6 !important;
+}
+
+@media (max-width: 1024px) {
+  .date-calender {
+    width: inherit;
+
+    p {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #Layer_1 {
+      padding-right: 0 !important;
+    }
+  }
+}
+
+.especialidade {
+  .active {
+    background: #122137 !important;
+  }
+}
+
+.btn {
+  &:not(.save-btn) {
+    min-width: 176.5px;
+  }
+}
+
+.filter-btn {
+  height: 40px !important;
+  min-width: auto;
+}

@@ -1,0 +1,803 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<div class="body-wrapper quotes-list page-transition"
+  [ngClass]="currentUser.role_id == 3  ? 'admin-wrapper' : currentUser.role_id == 4 ||currentUser.role_id == 5 ?'company-wrapper' : ''">
+  <div class="row no-gutters justify-content-between">
+    <div class="title main-title">
+      <h2>Cotações</h2>
+      <p>
+        Acompanhe todas as cotações. Crie e edite em poucos cliques. Aproveite e
+        compartilhe com o seu cliente quando quiser.
+      </p>
+    </div>
+    <div class="list-stats">
+      <div class="data">
+        <span>Quantidade de Cotações</span>
+        <h3>{{ quotesCount }}</h3>
+      </div>
+      <div class="data">
+        <span>PIPELINE</span>
+        <h3>{{ formatedPrice }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="position-relative overflow-auto pt-3">
+    <div class="button-group d-flex align-items-center filter-list">
+      <div class="select-boxes-option">
+        <ngx-select [items]="filterOptionsList" placeholder="FILTRAR POR" (select)="filterList($event)"></ngx-select>
+      </div>
+      <button type="button" class="btn btn-outline-primary front-hide" (click)="exportQuotes('export')">
+        EXPORTAR COMO CSV
+      </button>
+      <button class="btn btn-primary back-hide" routerLink="/quotes/add">
+        NOVA COTAÇÃO
+      </button>
+    </div>
+    <table id="quote-list" style="width: 100%;" cellspacing="0"></table>
+  </div>
+
+  <!-- Share Quote Start -->
+
+  <button class="btn btn-primary d-none" id="shareQuoteButton" (click)="openShareQuoteModel(shareQuote)"></button>
+  <ng-template #shareQuote>
+    <div class="instill-modal">
+      <div class="modal-header header-quotes bg-secondary">
+        <h3 class="modal-title" id="exampleModalLongTitle">
+          Compartilhar Cotação
+        </h3>
+        <button data-dismiss="modal" aria-label="Close" (click)="closeShareQuoteModel()" class="btn btn-light">
+          <img src="../../../../assets/images/close-button-white.svg" alt="" />
+        </button>
+      </div>
+      <div class="pop-search">
+        <div class="modal-body">
+          <div class="form-group mt-4">
+            <span>
+              <b>Link para compartilhamento</b>
+            </span>
+            <div class="d-flex copy-link justify-content-between align-items-center">
+              <span>{{ shareQuoteUrl }}</span>
+              <button type="button" name="button" class="btn" (click)="copyLink(shareQuoteUrl)">
+                <img src="../../../../assets/images/copy (1).svg" /> COPIAR
+              </button>
+            </div>
+            <span>
+              <b>Ou compartilhe direto em suas redes</b>
+            </span>
+            <ul class="p-0 mt-2 modal-social-icons d-flex">
+              <li *ngIf="deviceType == 'web'">
+                <a href="https://web.whatsapp.com/send?text={{shareQuoteUrl}}" target="_blank" data-text=""
+                  class="wa_btn wa_btn_s"><img src="../../../../assets/images/whatsapp.svg" /></a>
+              </li>
+              <li *ngIf="deviceType == 'mobile'">
+                <a href="whatsapp://send?text={{shareQuoteUrl}}" target="_blank" data-text=""
+                  class="wa_btn wa_btn_s"><img src="../../../../assets/images/whatsapp.svg" /></a>
+              </li>
+              <li>
+                <a href="https://t.me/share/url?url={{shareQuoteUrl}}&text={{shareQuoteUrl}}" target="_blank"
+                  class="wa_btn wa_btn_s"><img src="../../../../assets/images/telegram.svg" /></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>
+<!-- Share Quote End -->
+
+<!--Quote PDF Start-->
+<button class="btn download-pdf d-none" id="quotesPdfDetail">Download</button>
+<div id="quotePdf d-none">
+  <div class="pdf-page d-none" *ngIf="quotesDataExist == true">
+    <div class="container">
+      <!-- Header Start -->
+      <img width="800"
+        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA8sAAABkCAYAAACxU6IJAAABR2lDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8rAzCDBwMUgwsCfmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsisx3V7FzdOtHfzqBbx0vTO/o2pHgVwpaQWJwPpP0CcnlxQVMLAwJgCZCuXlxSA2B1AtkgR0FFA9hwQOx3C3gBiJ0HYR8BqQoKcgewbQLZAckYi0AzGF0C2ThKSeDoSG2ovCPC6uPr4KLgaGRlaePgRcC/JoCS1ogREO+cXVBZlpmeUKDgCQylVwTMvWU9HwcjAyJCBARTmENWfb4DDklGMAyGWB8QWxQwMzF8QYgmfGRi2HGVgEHRHiKk/YmAQOsHAsPdjQWJRItwBjN9YitOMjSBs7u0MDKzT/v//HM7AwK7JwPD3+v//v7f///93GdD8WwwMB74BAK89YNDLTrtaAAAAVmVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAADkoYABwAAABIAAABEoAIABAAAAAEAAAPLoAMABAAAAAEAAABkAAAAAEFTQ0lJAAAAU2NyZWVuc2hvdK1d/ckAAAHWaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIj4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjk3MTwvZXhpZjpQaXhlbFhEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOlVzZXJDb21tZW50PlNjcmVlbnNob3Q8L2V4aWY6VXNlckNvbW1lbnQ+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVuc2lvbj4xMDA8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KYdQ9zwAAOh9JREFUeAHtnQec1MQXxx/FCtK7HL2jUgSUohTpiEpRehOkNxHkTxeRpnSlShEQUZGuVEVAAVG60kR671WkqPznN3sTsrns3u7dgXD7e5/PbZLJ1G8mubzMmzdxkuVreEsoJEACJEACJEACJEACJEACJEACJEACmkC7VzJLXLIgARIgARIgARIgARIgARIgARIgARLwJkBl2ZsHj0iABEiABEiABEiABEiABEiABEiAI8vsAyRAAiRAAiRAAiRAAiRAAiRAAiTgJMCRZScRHpMACZAACZAACZAACZAACZAACYQ8ASrLId8FCIAESIAESIAESIAESIAESIAESMBJgMqykwiPSYAESIAESIAESIAESIAESIAEQp4AleWQ7wIEQAIkQAIkQAIkQAIkQAIkQAIk4CRAZdlJhMckQAIkQAIkQAIkQAIkQAIkQAIhT4DKcsh3AQIgARIgARIgARIgARIgARIgARJwEqCy7CTCYxIgARIgARIgARIgARIgARIggZAnQGU55LsAAZAACZAACZAACZAACZAACZAACTgJUFl2EuExCZAACZAACZAACZAACZAACZBAyBOgshzyXYAASIAESIAESIAESIAESIAESIAEnASoLDuJ8JgESIAESIAESIAESIAESIAESCDkCVBZDvkuQAAkQAIkQAIkQAIkQAIkQAIkQAJOAlSWnUR4TAIkQAIkQAIkQAIkQAIkQAIkEPIEqCyHfBcgABIgARIgARIgARIgARIgARIgAScBKstOIjwmARIgARIgARIgARIgARIgARIIeQJUlkO+CxAACZAACZAACZAACZAACZAACZCAk0B8Z0B0j89s/kTixIkT3WyY/i4SuHXrlqQo0PgulsiiSIAESIAESIAESIAESIAESODeJhDjynKech3v7RazdiRAAiRAAiRAAiRAAiRAAiRAAiQQCYEYV5ZPnbkQSZE8TQIkQAIkQAIkQAIkQAIkQAIkQAL3NgHOWb63rw9rRwIkQAIkQAIkQAIkQAIkQAIk8B8QoLL8H0BnkSRAAiRAAiRAAiRAAiRAAiRAAvc2ASrL9/b1Ye1IgARIgARIgARIgARIgARIgAT+AwJUlv8D6CySBEiABEiABEiABEiA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SIAESIAESIAESIAESIAEQphA+eyH74437BBmzKaTAAmQAAmQAAmQAAmQAAmQAAnchwTuypzl+5ALq0wCJEACJEACJEACJEACJEACJBDCBKgsh/DFZ9NJgARIgARIgARIgARIgARIgATcCVBZdufCUBIgARIgARIgARIgARIgARIggRAmQGU5hC8+m04CJEACJEACJEACJEACJEACJOBOgMqyOxeGkgAJkAAJkAAJkAAJkAAJkAAJhDABKsshfPHZdBIgARIgARIgARIgARIgARIgAXcCVJbduTCUBEiABEiABEiABEiABEiABEgghAlQWQ7hi8+mkwAJkAAJkAAJkAAJkAAJkAAJuBOgsuzOhaEkQAIkQAIkQAIkQAIkQAIkQAIhTIDKcghffDadBEiABEiABEiABEiABEiABEjAnQCVZXcuDCUBEiABEiABEiABEiABEiABEghhAlSWQ/jis+kkQAIkQAIkQAIkQAIkQAIkQALuBKgsu3NhKAmQAAmQAAmQAAmQAAmQAAmQQAgToLIcwhefTScBEiABEiABEiABEiABEiABEnAnQGXZnQtDSYAESIAESIAESIAESIAESIAEQpgAleUQvvhsOgmQAAmQAAmQAAmQAAmQAAmQgDsBKsvuXBhKAiRAAiRAAiRAAiRAAiRAAiQQwgSoLIfwxWfTSYAESIAESIAESIAESIAESIAE3An8HyvhoTYvuq0gAAAAAElFTkSuQmCC"
+        style="margin-bottom: 15px;" />
+      <div style="margin-left: 20px; margin-right: 20px; font-family: Open Sans;">
+        <table style="width: 100%; margin-bottom: 20px;">
+          <tbody>
+            <tr>
+              <th style="
+                  color: #6a7787;
+                  font-size: 12px;
+                  font-weight: 600;
+                  background-color: #eeeeee;
+                  text-align: left;
+                  padding: 15px;
+                  border-right: 10px solid #fff;
+                  border-radius: 2px;
+                ">
+                CORRETOR:<span
+                  style="display: block; color: #373a3c; font-size: 13px;">{{quotesData.user.company_name}}</span>
+              </th>
+              <th style="
+                  color: #6a7787;
+                  font-size: 12px;
+                  font-weight: 600;
+                  background-color: #eeeeee;
+                  text-align: left;
+                  padding: 15px;
+                  border-right: 10px solid #fff;
+                  border-radius: 2px;
+                ">
+                NOME:<span style="display: block; color: #373a3c; font-size: 13px;">{{quotesData.user.name}}</span>
+              </th>
+              <th style="
+                  color: #6a7787;
+                  font-size: 12px;
+                  font-weight: 600;
+                  background-color: #eeeeee;
+                  text-align: left;
+                  padding: 15px;
+                  border-radius: 2px;
+                ">
+                EMAIL:<span style="display: block; color: #373a3c; font-size: 13px;">{{quotesData.user.email}}</span>
+              </th>
+            </tr>
+          </tbody>
+        </table>
+        <table style="
+            width: 100%;
+            border: 1px solid #d1d1d1;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 2px;
+          ">
+          <tbody>
+            <tr style="height: 25px;">
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                Proponente:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.customer_company_name}}</span>
+              </td>
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                Email:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.email}}</span>
+              </td>
+            </tr>
+            <tr style="height: 25px;">
+              <td *ngIf="quotesData.cpf" colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                CPF:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.cpf}}</span>
+              </td>
+              <td *ngIf="quotesData.cnpj" colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                CNPJ:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.cnpj}}</span>
+              </td>
+              <td *ngIf=quotesData.profession colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                Profissão:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.profession.name}}</span>
+              </td>
+            </tr>
+            <tr style="height: 25px;">
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                Endereço:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.customer_address}},
+                  {{quotesData.customer_address_number}}, {{quotesData.district}}, {{quotesData.city}},
+                  {{quotesData.state}}, {{quotesData.zip_code}}</span>
+              </td>
+              <td *ngIf="quotesData.specialty" colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                Especialidade:
+                <span style="font-weight: 600; color: #232323;">{{quotesData.specialty.name}}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table style="
+            width: 100%;
+            border: 1px solid #d1d1d1;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 2px;
+          ">
+          <tbody>
+            <tr style="height: 25px;" *ngIf="quotesData.product">
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                <span style="width: 145px; display: inline-block;">Produto:</span>
+                <span style="font-weight: 600; color: #232323;">{{quotesData.product.name}}</span>
+              </td>
+            </tr>
+            <tr style="height: 25px;">
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                <span style="width: 145px; display: inline-block;">Período de Vigência:</span>
+                <span style="font-weight: 600; color: #232323;">12 meses a contar da data da contratação</span>
+              </td>
+            </tr>
+            <tr style="height: 25px;">
+              <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+                <span style="width: 145px; display: inline-block;">Âmbito Geográfico:</span>
+                <span style="font-weight: 600; color: #232323;">Território Nacional - Brasil</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <hr style="border-top: 1px solid #d1d1d1;" />
+        <h2 style="font-size: 18px;">Descritivo das Coberturas</h2>
+        <div style="margin-bottom: 20px;">
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+              text-transform: uppercase;
+              font-weight: 600;
+            ">
+            Danos Materiais, Morais e Corporais
+          </button>
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+              text-transform: uppercase;
+              font-weight: 600;
+            ">
+            Despesas e Honorários de Defesa
+          </button>
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+            ">
+            Despesas Emergenciais
+          </button>
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+              text-transform: uppercase;
+              font-weight: 600;
+            ">
+            Despesas de Gerenciamento de Crises
+          </button>
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+              text-transform: uppercase;
+              font-weight: 600;
+            ">
+            Devolução de Honorários a pacientes
+          </button>
+          <button style="
+              margin-right: 10px;
+              margin-bottom: 10px;
+              height: 26px;
+              background-color: #acb7c5;
+              border: 0;
+              color: #fff;
+              border-radius: 60px;
+              padding: 0 20px;
+              font-size: 10px;
+              text-transform: uppercase;
+              font-weight: 600;
+            ">
+            Extensão para Pessoa Jurídica
+          </button>
+        </div>
+        <p style="font-size: 13px;">
+          O inteiro teor das condições do Seguro devem ser consultadas.
+        </p>
+        <p style="
+            margin-bottom: 20px;
+            display: block;
+            font-size: 13px;
+            color: #122137;
+            font-weight: 600;
+            text-decoration: underline;
+          ">O inteiro teor das condições gerais do Seguro devem ser consultadas <a
+            href="../../../../assets/pdfs/CG_RC_PROF_SAUDE.pdf">CLICANDO AQUI</a>
+          Produto registrado sob o processo SUSEP Número 15414.612655/2020-92 </p>
+        <hr style="border-top: 1px solid #d1d1d1;" />
+        <h2 style="font-size: 18px;">Opções de contratação</h2>
+        <div style="
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-column-gap: 1.3rem;
+            font-family: Open Sans;
+          " *ngIf="quotesData.quote_options.length > 0">
+          <div class="card" style="
+              box-shadow: 0px 2px 20px #3b43501a;
+              border-radius: 20px;
+              overflow: hidden;
+            ">
+            <div class="card-top" style="
+                background-color: #d4d4d4;
+                display: flex;
+                align-content: center;
+                justify-content: center;
+                color: white;
+                flex-wrap: wrap;
+                padding: 20px 0;
+              ">
+              <span style="
+                  flex-basis: 100%;
+                  font-size: 13px;
+                  text-align: center;
+                  font-weight: bold;
+                ">Limite Máximo de Indenização</span>
+              <h3 style="font-size: 24px; margin-top: 0; margin-bottom: 0;">
+                {{quotesData.liability.name}}
+              </h3>
+            </div>
+            <div class="card-body" style="
+                text-align: center;
+                padding-top: 30px;
+                padding-bottom: 10px;
+              ">
+              <p style="
+                  color: #122137;
+                  font-size: 13px;
+                  margin-bottom: 1rem;
+                  margin-top: 0;
+                  font-weight: bold;
+                ">
+                FRANQUIA<br />
+                10% dos prejuízos indenizáveis
+              </p>
+              <div style="margin-bottom: 1rem;">
+                <span class="d-block text-uppercase" style="
+                    font-size: 13px;
+                    font-weight: bold;
+                    display: block;
+                    text-transform: uppercase;
+                    color: #aaafb5;
+                  ">mín</span>
+                <h3 class="text-secondary" style="
+                    font-size: 26px;
+                    font-weight: bold;
+                    color: #b9b28b;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[1].franchise}}
+                </h3>
+              </div>
+              <div class="final-price">
+                <label class="text-uppercase" for="" style="
+                    color: #aaafb5;
+                    font-size: 13px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                  ">
+                  PRÊMIO TOTAL
+                </label>
+                <h3 style="
+                    font-size: 16px;
+                    color: #13366a;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[1].price}}
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="
+              box-shadow: 0px 2px 20px #3b43501a;
+              border-radius: 20px;
+              overflow: hidden;
+            ">
+            <div class="card-top" style="
+                background-color: #b9b28b;
+                display: flex;
+                align-content: center;
+                justify-content: center;
+                color: white;
+                flex-wrap: wrap;
+                padding: 20px 0;
+              ">
+              <span style="
+                  flex-basis: 100%;
+                  font-size: 13px;
+                  text-align: center;
+                  font-weight: bold;
+                ">Limite Máximo de Indenização</span>
+              <h3 style="font-size: 24px; margin-top: 0; margin-bottom: 0;">
+                {{quotesData.liability.name}}
+              </h3>
+            </div>
+            <div class="card-body" style="
+                text-align: center;
+                padding-top: 30px;
+                padding-bottom: 10px;
+              ">
+              <p style="
+                  color: #122137;
+                  font-size: 13px;
+                  margin-bottom: 1rem;
+                  margin-top: 0;
+                  font-weight: bold;
+                ">
+                FRANQUIA<br />
+                10% dos prejuízos indenizáveis
+              </p>
+              <div style="margin-bottom: 1rem;">
+                <span class="d-block text-uppercase" style="
+                    font-size: 13px;
+                    font-weight: bold;
+                    display: block;
+                    text-transform: uppercase;
+                    color: #aaafb5;
+                  ">mín</span>
+                <h3 class="text-secondary" style="
+                    font-size: 26px;
+                    font-weight: bold;
+                    color: #b9b28b;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[0].franchise}}
+                </h3>
+              </div>
+              <div style="margin-bottom: 1rem;">
+                <label class="text-uppercase" for="" style="
+                    color: #aaafb5;
+                    font-size: 13px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                  ">
+                  PRÊMIO TOTAL
+                </label>
+                <h3 style="
+                    font-size: 16px;
+                    color: #13366a;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[0].price}}
+                </h3>
+              </div>
+              <button style="
+                  background-color: #83e2c2;
+                  color: #fff;
+                  border-radius: 97px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  height: 30px;
+                  border: 0;
+                  padding: 0 10px;
+                ">
+                OPÇĀO ESCOLHIDA
+              </button>
+            </div>
+          </div>
+          <div class="card" style="
+              box-shadow: 0px 2px 20px #3b43501a;
+              border-radius: 20px;
+              overflow: hidden;
+            ">
+            <div class="card-top" style="
+                background-color: #d4d4d4;
+                display: flex;
+                align-content: center;
+                justify-content: center;
+                color: white;
+                flex-wrap: wrap;
+                padding: 20px 0;
+              ">
+              <span style="
+                  flex-basis: 100%;
+                  font-size: 13px;
+                  text-align: center;
+                  font-weight: bold;
+                ">Limite Máximo de Indenização</span>
+              <h3 style="font-size: 24px; margin-top: 0; margin-bottom: 0;">
+                {{quotesData.liability.name}}
+              </h3>
+            </div>
+            <div class="card-body" style="
+                text-align: center;
+                padding-top: 30px;
+                padding-bottom: 10px;
+              ">
+              <p style="
+                  color: #122137;
+                  font-size: 13px;
+                  margin-bottom: 1rem;
+                  margin-top: 0;
+                  font-weight: bold;
+                ">
+                FRANQUIA<br />
+                10% dos prejuízos indenizáveis
+              </p>
+              <div style="margin-bottom: 1rem;">
+                <span class="d-block text-uppercase" style="
+                    font-size: 13px;
+                    font-weight: bold;
+                    display: block;
+                    text-transform: uppercase;
+                    color: #aaafb5;
+                  ">mín</span>
+                <h3 class="text-secondary" style="
+                    font-size: 26px;
+                    font-weight: bold;
+                    color: #b9b28b;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[2].franchise}}
+                </h3>
+              </div>
+              <div>
+                <label class="text-uppercase" for="" style="
+                    color: #aaafb5;
+                    font-size: 13px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                  ">
+                  PRÊMIO TOTAL
+                </label>
+                <h3 style="
+                    font-size: 16px;
+                    color: #13366a;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                  ">
+                  {{quotesData.quote_options[2].price}}
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img width="800"
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA8sAAABkCAYAAACxU6IJAAABR2lDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8rAzCDBwMUgwsCfmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsisx3V7FzdOtHfzqBbx0vTO/o2pHgVwpaQWJwPpP0CcnlxQVMLAwJgCZCuXlxSA2B1AtkgR0FFA9hwQOx3C3gBiJ0HYR8BqQoKcgewbQLZAckYi0AzGF0C2ThKSeDoSG2ovCPC6uPr4KLgaGRlaePgRcC/JoCS1ogREO+cXVBZlpmeUKDgCQylVwTMvWU9HwcjAyJCBARTmENWfb4DDklGMAyGWB8QWxQwMzF8QYgmfGRi2HGVgEHRHiKk/YmAQOsHAsPdjQWJRItwBjN9YitOMjSBs7u0MDKzT/v//HM7AwK7JwPD3+v//v7f///93GdD8WwwMB74BAK89YNDLTrtaAAAAVmVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAADkoYABwAAABIAAABEoAIABAAAAAEAAAPLoAMABAAAAAEAAABkAAAAAEFTQ0lJAAAAU2NyZWVuc2hvdK1d/ckAAAHWaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIj4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjk3MTwvZXhpZjpQaXhlbFhEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOlVzZXJDb21tZW50PlNjcmVlbnNob3Q8L2V4aWY6VXNlckNvbW1lbnQ+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVuc2lvbj4xMDA8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KYdQ9zwAAOh9JREFUeAHtnQec1MQXxx/FCtK7HL2jUgSUohTpiEpRehOkNxHkTxeRpnSlShEQUZGuVEVAAVG60kR671WkqPznN3sTsrns3u7dgXD7e5/PbZLJ1G8mubzMmzdxkuVreEsoJEACJEACJEACJEACJEACJEACJEACmkC7VzJLXLIgARIgARIgARIgARIgARIgARIgARLwJkBl2ZsHj0iABEiABEiABEiABEiABEiABEiAI8vsAyRAAiRAAiRAAiRAAiRAAiRAAiTgJMCRZScRHpMACZAACZAACZAACZAACZAACYQ8ASrLId8FCIAESIAESIAESIAESIAESIAESMBJgMqykwiPSYAESIAESIAESIAESIAESIAEQp4AleWQ7wIEQAIkQAIkQAIkQAIkQAIkQAIk4CRAZdlJhMckQAIkQAIkQAIkQAIkQAIkQAIhT4DKcsh3AQIgARIgARIgARIgARIgARIgARJwEqCy7CTCYxIgARIgARIgARIgARIgARIggZAnQGU55LsAAZAACZAACZAACZAACZAACZAACTgJUFl2EuExCZAACZAACZAACZAACZAACZBAyBOgshzyXYAASIAESIAESIAESIAESIAESIAEnASoLDuJ8JgESIAESIAESIAESIAESIAESCDkCVBZDvkuQAAkQAIkQAIkQAIkQAIkQAIkQAJOAlSWnUR4TAIkQAIkQAIkQAIkQAIkQAIkEPIEqCyHfBcgABIgARIgARIgARIgARIgARIgAScBKstOIjwmARIgARIgARIgARIgARIgARIIeQJUlkO+CxAACZAACZAACZAACZAACZAACZCAk0B8Z0B0j89s/kTixIkT3WyY/i4SuHXrlqQo0PgulsiiSIAESIAESIAESIAESIAESODeJhDjynKech3v7RazdiRAAiRAAiRAAiRAAiRAAiRAAiQQCYEYV5ZPnbkQSZE8TQIkQAIkQAIkQAIkQAIkQAIkQAL3NgHOWb63rw9rRwIkQAIkQAIkQAIkQAIkQAIk8B8QoLL8H0BnkSRAAiRAAiRAAiRAAiRAAiRAAvc2ASrL9/b1Ye1IgARIgARIgARIgARIgARIgAT+AwJUlv8D6CySBEiABEiABEiABEiABEiABEjg3iZAZfnevj6sHQmQAAmQAAmQAAmQAAmQAAmQwH9AgMryfwCdRZIACZAACZAACZAACZAACZAACdzbBGJ86SjT3IQJHpYcWcKk6NM5TZDrNl/ujNK862jXc/bANk2q6sPRUxbag33uZ8uSXvJkD5OwtMmtOIePn5WfN++WE6fOWWHY8VfXjI+nlINHT8uhY2dl4bJ1XumcB2lSJZNc2cIkb44w5ymv40Db3KN9Lfl19yFZsNR/uah/mRIFvNqKAtdt3C2bft1jlY36FSmQ04rni4eV4C7sVK9QSJcyZ+mGu1AaiyABEiABEiABEiABEiABEiCBwAjcMWX5yp/XtKKWPl0KmTK4pa7NinXbZeXPO62a5VeKcvXyhQNSlhtXf16nC1RZ/mPfETlx8owcXDPeKi9j8RaCejnF1DXRY4/K7DGd9GlT14uXr0qn16tIkkSPyr521aVOh5GCvN0ESjj+ihfKpdJU1lEmf7VSDhw9Y0UvVSS3te9vBwpwkxolZf/h05Eqy6g/FOoGNcvIiJ6NdLb7Dp+S0Z987VUE6nbk2Bl9PeYs+0WmzvrWlYdXIh6QAAmQAAmQAAmQAAmQAAmQQAgSuGPKsmEJ5cwIFGWnsrtlp2fE2MRx25Yqlk+yhKXSp7C/cu1Wt2gRwqBEQuktUzSv3ropyvZEl5RibMRe15GT5svKL97TdVgypbvkr9zJr5J5wZbPzPk/eo3uov0YMY5MMFKcNHEC/YdRcl8Kuj2f6V+tkESPJZB3O9TUdX2pQtEIinbL+uVl/5HT8mbfiX7bYM+X+yRAAiRAAiRAAiRAAiRAAiQQagT+8znLs79ZEynzKmUKWnHqvfKctR/TO7/vO+yaJZTsdz+crc9BgYV5uT/Zrkyn/cmkz5f7O63PtWtQ0YrTom45az+ynalfLtfKMOIN695Am5ibNPjQUKNCEWnebTwVZQOFWxIgARIgARIgARIgARIgARJwIfCfK8vO+cPOOsIc+fWapfTIMM7BbBtzb++E+Bt5xlxnI3lz+leW7SPUJo19G1mbMZJc8IlMVpurlSvspfTa83Luow2dB0zXwVDsG73mUbTBceLAFjJs8iKvkW5neh6TAAmQAAmQAAmQAAmQAAmQAAmI/OfKcmQXoVqlYnLh0lVp0nmUFbVGleLW/t3asSu46zb9fkeLrfVicT063K7PRF0OlF6YZQcqMFOH+TkEJtn4uNCh6cuyX82dhkk5hQRIgARIgARIgARIgARIgARIwD+B/1xZxoinP2nfqJLMWfazNhuGUyqIcfblL11Mnyv4ZHad5aYdBwOaP+yv/MhGxuHYa8rsVdpZGMqD2M2y/eVtzhlFG8cLJ3XTDsda9ZxA82sDiFsSIAESIAESIAESIAESIAES8EPgjjv4spcNJbekwxv0KhenXyYNFFQ49oIHasiMeT9oM2yEBePoy+QXnW1R5eEaI9xQOIORwV3ry/nLf1pJkioHXB9OXxLB8ZaJAKdcGEk2c7mnzVkpBfM00mbZgTr6Ql4YCe898ivL2RfMrwNxEmbqwS0JkAAJkAAJkAAJkAAJkAAJhDKBuzqyfEB5YYZybP6SJk4o/pxh1Xm5hDZHNkoezIuhsELupKMv5J9RLXlVQCnr+KtfvYx0alJZKjTuH7TCuWXXAau9aHfSJAn08k0ow03qKwdmMKE2Zt9zF6+1ogXj6AuJ4OzLCEarIxvFN3G5JQESIAESIAESIAESIAESIIFQJ3BXR5btyzEB/NJVmyVRgkdcr4Fx7DVp1kqtsJpIG7fvlxfUUlBw9NVrSDJLqTTnY2qL5aYyp08pmdUoNrbnL94eHQ6mDOfSUf4+DsA8G20bqkaBoaQb2fTbAT2yDEdffYfPDNiUGs698HEBa0RjtLrPm3Wky3tTTLbckgAJkAAJkAAJkAAJkAAJkAAJ+CBwV5VlZx0wYuxrtBOOvSBNXy2l/5xpcQxHX851m93iRSUMc4aRN+qHNZahMI999w2p1mJgwMqqW7n+1ohuWtvjufqt1ysL/pxiHH0tWLrOeSrCMUy24dyrRuth0qZBBb3WNLyKO5X3CAkZQAIkQAIkQAIkQAIkQAIkQAIk8N97w/a1XJPHsdcvkjx/owh/+5U5N+RuOPpC/bAuMQTLOfXuWEfv34kfmEpP/mplhPaCgTE/D8TRFxT8mSM7aHNuKOd2Z1+YQ00hARIgARIgARIgARIgARIgARLwT+Cuzln2X5XbZ41jr4XfbbwdaNsb+ckifWQcfdlORWsXo7FusunXPdpZFs5hpLtBzTJu0aywRI89au0HumMce2Hk102gREOgsPuqp46gfrBMVDI1H9woyZj/DAdfEKSPrP46In9IgARIgARIgARIgARIgARIIIQJ3JPKMhx7YSTVl7nx8tVbrEvWWpkYx5T4mj+N/GGSbdYuHtGzkfbG7avcvDkz+DrlMxyOvTBiDsXcTb74eo0V7M/RF7yEd1Im3MOmLPKaz431lc3odJ92nrWXrQy5QwIkQAIkQAIkQAIkQAIkQAIk4EXgnlOWjWMvrK3sSzBSatZchkMsf+sWF8iTSWeTRC3ZFF1p0nmUpXBOHNgi0hFelJdeedWOTIxjr7nh60i7xcf8brPmMuYeu7UZ7FAvKN3OudwwJ39n1CydNeY+v/vWnTMnd6v//RQW/4H4kjNbBnn6qRySWLG6X+TxtClkdP9W0ls5ckvwqGf98okftJWmdSvGeBPixIkjmcLSSKF8OSVZ0kQxnv/9mGHXNjXl6PqPZcuSYfdj9WN9nbcvH6WvT5vGL0ba1uJFnpDZE7pJmRL5rbifffiWTv/FmC5WmFs866Rj5071j4VTeup6TR7S3lFizBz6ex7iOfBhv5YyZmBriRsnuNcJN3ZujGOmFTGXS5smVeWPVWPk9KZP5ODaCbJ4Wm959uncur+UL/V0zBUUnlOLBpUFfS59upQxnndUM8SzH886/EVm6RbVMpiOBEiABO4VAnfcwVel0gWttubLFfmI67DeTXX8A0fPWOncdmCiDY/YkOnDOrg63oLyCMUQAvNjHPuaI404eXOGYaPFra5Ii+WjPh/VUTv8WjKlu7yj1jKet3StV772tE+qUWZfI+QoCHVC/SFrNuzSW18/Zs1lnB/Vt5m8rpR30x7kM3d8N93e4Z8sds1i+lcrpEPjyrruNSoUkdXrd8qnc1a4xg3FwGcK5pYRvRtLjkxpvJp//cZN+WblFnnj7Y+8wgM5wMvkIw8/KNeu3ZR/b/0bSJIoxUmovMpvXTREUB6knbK4OHTsjGRSjum+V0uRxZTEjxdPxg9qLS+XfdoqC3nfuPmPrN20W2q2fF9u3boVU8XdV/mkSZFEHn7oQUkVQx8P4BH/2+k9IzA4eeaifLZwrYxS1i6XLv0Z4TwD3AkkS5JQHnwgnqROkdg9gi10pHoOwKljjoyp5ckKHfWZx9Mk09c3vdoacYtnzjm3Md0/TP6Pp0rqqVfqpCYoRraBPA+hJNatWlSXN2/pelm20n3qlFuF3Ni5MXZLu27eYNfn9OHj5+TtQZ/KqnXb3JJFO6xK2We040yTUcJHH5KEjzwsQ3s0lFxZ0kmerOkkdxAMTD7+tv07vaaftd3Ux7g2Pcb6i3rXzj2s/qfhWQdJ8MhDd61cFkQCJEAC/wWBO6osY27shctXrfm+aCC+ymL5JKdXaHydrFCygGzddUj/IS5Mip3xEA655MgXyyTZ8zX59VbKrBHEuXT5T4HS6BTMGU6kRp/t8VHXdUqBtZtGY4S3VK2easShgISpUWOMPCJfLIOFc2izvQ0oB/mY8/Zy0T6YbM/7boP+M+bbvtp88fJfXvUzbUae9nxwjPajPk6Bl28jqDvqNvubNV4m2+Z8KG0bvvqCDFcvPHb5999bEjduHHnowQckT7bH7acC3m9ev5IMeKuWvDdmrgyfMC/gdMFGbN2wiueFasjnUqJQbqlc8imtKP9x6JR8MX91sNn5jD9tREep8NxT1nkoxlDQoYQ8oT42haqibAGJwZ244R8+nFlC2XuzSSXt4DBX2fby982/nVF4HE0CXy1eL+0bVpDZS31bOKGIQONFszp3PXmgz8NtO/bJ6fOXJZ56Tv60yf/HXmcjYpodntPZ1MeNOWPfkmbdJsjcxbenLjnLjupxy3qeFSvwv6F8o/5y9vxF+eeff6WmWpmj6xtVZe7yDVHN2me6tZv3SIHcGWXO4shXwfCZCU+QAAmQAAlEmcAdVZbdlFJfNYVi56bc+YoPhdKXUok0webnb/TXWQeM5vqKH0ybI2uDs1xfZSKePxb2fJzm2fZzobqfNk1yGdqtgW4+lL2ew7+UiTOXaSUkbepk0rVVdZm9ZH2U8DSs9pxOF0c8I75RyiSARNPnfi9LV2+Wrdv3yoRPF8uj6mt/YuXk7fiJswGkDjxKueJP6siHVb4VG74nJ0+fl2cK5pJqFZ+RDdv2BZ4RYwZFoEz9frL/4DGpUKqQdFYv5dkypNJWJC3qVZTRn3wdVF6MHDmBQaNnCf4ik0DjRZbPvXQ+mOfhn1evSa7SbaNU/Zhgt3v/MSlWrZvkyZlJ6rz0nLSq+4L+eDesR4M7oiynTZlEt3XPweOy2eZfZOTE+YK/OyEvvd7/TmTLPEmABEiABAIkcEeV5QDrwGgk8J8S6Ni0qh5BRiWa95woc7750arP8ZPnpOM7E61js/N2q5ryRu3SkjSRx8z/7MUr8tG0ZfLh5AU6SopkiWX6iA7aNA8Bbzd/SY8GYr9ojR5y5NhptU74czosi1J8MCqC0YrN2/fLyKlL5JtvvZVzzBGbOqydZM+QWh566AG5dv2GYNS478hZsuLHLZImZTLpqRy3FXkyszb7xmjv1b+uy+ffrJO3+3/iNeL7kDKf+3hwWylZJJfAjPDm3//KiTPnpU3vybLm599QRVeBqTdG2iGTvlxpWSP8tHGn4M8pFcsU1h8hUiVPpF5glTXIlWsydPI3EebTYy5nKzVik1Ap+Kg3TLr//vv2aGn2Um2li/pg0bxWGTl59pIUerGzV1H7fxwn8ePFlQ7vTbOu3W/LRkrixx6RbCrtR/2aq5H2fNpssEnXcdaHrsiuoVchjoNXKhaTD7rV017nUd8de4/Kr7sOOmJ5DmGuOHV4BylWILv+iIH4O1X8eh1HBPUxA9Y0sxaulvWbd8nmrz/QmT+TP4eMtpUaCHN8SOn/dgN1/XNLhnTJ5e9/bskR9fFj/da90mfoZ3Lm3EWZoebnPl8op/QY9oWgjJfKFNB1v3L1ukyb+4P0+mC6rVRRfTKwPtVMKfd92lZXI3AbZdvug9LljRclRZLHdN8/fPysNHl7jP7gYzLv0Oxlqa6mjOTIlFYeiB9XTp65pCx3DsqwiV/Lhq27dbRg7iMkeEDda9/OfFfyZkuv88S9++Z702WR7Z4z7ceoXq3WHtamTvatr3iB9g9Ma+jSuobUq1pcUiRLpOtz/fpN+f7nndL/o9myY/cBe3EysHtjqftiMX3f4v5evHqr/KWeBW6CZ8YMtYRglrDU2vID8Zev+U1adBsrN2/edEuiw4J5HqKMH758V6crXe9daVq7rNSvWkyuqjrlLt3ea+rJq1Wfl2Hd6+u4peq8o/1moI9FxthnRW0nwKnXBwfkmaeyyNNPZpFECdWzSs2hxtSXmHgWwB/EqHeaSqbHU+hS0R8Pr5ug7p1/JXOJljLpg3ZSvsSTsuHXA1Kt+QAdJ5D7DEp+15bV1D2WVVImfUw/1/ccPCmr1BSpPkNn6HxM/QeOWyBjpn5ttfoFNZ9+RK/GkjJ5Yt1vLqsPFyvWbldLXY7xsjYx6Yu/2lMmvd9W9ft0+v8N+tlM9f+hc7/J1v+HYPujVRnukAAJkEAsJhCcR45YDIJNC10CxZQyAIE5oV1R9kVk/qQe0rVFVa0oQbnDH17432lfQysZSFe0UB4prF7ajOBFH3OX8YcXEkjrBuUltzLvhqKMFxcoonjRmzaktTz3rGcEF/GeyptFNiwYJE9kT68VZYRBAcPxJWWaDyn/fD4ppZRfvKDdUGa5GCHHPpzBDereSMfBD5z17PpulFQplU+/cCMe6hamRtcXTOgijWqVteI6d678+ZdmhPD2jSoIRt19SetGL8qMYW2VEp/YUrChvL7boaYM79PMSoY5gG+rkdLHlEOyMxeu6Pxh0o26P/DAA7Jr73H5R31EQFkIS60Ub6fgxRjnUiplw0hy9eKJsDWzB2jfBmZ+3bET53SUQK6hycu5rVapuEwa1EJff5xDffMrfwwNlEd7p4D3TsW7bLEndH3wQQTx4ddg89dDouRAzu5I6a9r160iA2WOtsPiIaN68ceHElx/zM99rdIzygeCpz9hXi74weKidpVn9T4KwseV1vXKyoh3bl/DYPoU5u0i3zovFpXBXero+wb5ou+jPoundNOKN8I6t6guvZVijX6OjyEQ9CdMA3jkkQf1MX4CvY9MguavldZmrbgO5t6dru45u3Mm0377/GST3r51ixdM/0B/aFe/vKRNlUS1MY7APwI+hlVUbfzu095qatDtZQg/VooO6o5rAAFH+J7AXFmnQAnDMwPn0E6Ug/jwNbB+3iBndK/jYJ6HmLuKfPGHuasLlGNO7ON5WK1yca98OzSqqM+pqsjeA8fEjZ1XgigcXLzi6b/2pDHxLHj+mSf0xyX0Fwi2eJab50oGpUyj3WHpbj8TI7vP8IEJ1/jF0vm1ooxrj/yezBEmVcsUtJpg6o++bwRO6r786E1Jp+ap4/7FcxzPUFzf7ctHeDlbM+k3LnhfCubJqP/fIB/0s8bVn5eeHWqZbHU/CbQ/Wom4QwIkQAKxnACV5Vh+gdm8yAlkVSO7kK073UcG7TmULPqUlHjao1wv+WGbpC7cVNIUbibfrv1NR8NLbuECuWThsnWSokBj64t9/zHz9DHCDhw+oeO26zNJeo+YpdOne6aZ5Kvc2YpvXx5syuDW+uUMik2djqN0PmUbvKfTmtG1oWo+9OhPl0muF9pLuiLNJGPxlnJKjcJCXilXSG/xM7hbIz3qgv3Og2bovJDmxOmLCJJBnetaL4A6wPEzI3wdcKzj/dvS4TJvYnfJkN7Dz0TFS2MvpeRAfj9wQrKXbifpn20u34U7GmvwSgllQpxQnx+kFCYIPL3DnBN/m8Ovw8Urf0q5+n38joLpxH5+oASeUyOHg8cvlPIN+8uWHXsl0GvoK9tBXT11xvUoXa+vZCnZWsbNXGFdO3u6d9+qZ/Fu/PY4SVmwseDaQXnBS+7ofi3s0X3uP6iUbnDN90Q2mfnhm1a8T+et1vvBMMcLMwTzcdMWfl3SPfOGNOg8Rlr2mqRHtvTJ8B8osejnBV7sotsJ52KQei+VUM4JH9H7UelTyBf9EyP96KsLV2zWeeHDUfmSHo/CjdSLPAR9E9xSFmwilV8fJH0/nCM//PSrPoefQO8jkwCKxQjlBBHl4vphpB9ipmKYeFHdBtM/MPLZ9t1PNH88G3Dvdnxvqi4aSi7M7iGwVKkWfh+DR+bnW8sz1XvIyvU79Hnnz5T3Pc8MWKA8V6uP5td96Bc6Gj5KYJTXlwTzPHTmsW7DDmVB4lFYW9X3zO9FHPSVXMr5FeTzb9bqbUz/ZM2UTko/m0dni1FWp0PF6DwLZs5bqZ+VmH4C2fDrPn2M+8eXRHafFVXO0XCNIfU6faSvfbaSbaTTwOnSvPsEX9lqlr3a1tDnj5+6oJ+vuDfM9cWHir6d60VIj3sOViG5y3WUKk0H6Q8ziFRHWSoYCbQ/mvjckgAJkEAoEKCyHApXmW30SQCjYvjCDoH36Mikcc1SVpRW3cdqczeYNNZrN0yP0uFki7q+R2etxGoHpoOYb4r0GGW4du2G4OUHEpY2ud5iFBoerSFT567S3mbxso/5cva5qnDy1HvIDDl99qIeVYBy9ePG3TpdogS3R6cql8yvw85f/FOmfL5M7yNN/U4f6n28vL3wXAG97/bTb8TnXorhc8qMEibBWNoEI8GQss8XtF4C+4z4Um6oEZP48eNps1Kcx6hM0cJ5satNCLHdsmM/Nlpgig5JnNBj4q4PovgDpTRP2Y7y/tivZOO23/X1is41xMgPXkYhq3/ZKdu275OLimWPwVPlF/UC7RSj4Bw5eV6+X7NFv+juUf4ZYLYNKZA7k95G9rNEjbjC7HPFp70sL8BjZnxrKY3BMDcfUaqWeVqwLM0/f/+jTZBnf/NDhGpA2arXbqgcOnJKt3PUtCU6Dl68ixfxXMOo9qlX2w7TJvEYze7Sf4pVdl41kgzZ8JuHJ0bUsErCY2qUdf2mnTJKrRlvl0DuI3v8LcqJJPoxysX1mz7P026M0kVXgu0fKA/WLMYEHErltz9ssT68GAWzQqmC+r5B/MET5msv6PDLUaPF4AgfOPDMgKMryLxvN6lrd1L3uxlzvrcUpPI2J306YvhPsM9De1qz/9lCjyMqWFuYkdc36lWw6j9k3FwTNdrb7BnTqpHUUYIlnH6eN9Aq43+DZ0bIO6afBREKcAREdp9t2Pq7dZ3hXBJm1efVh72pX3xrTTFwZKkPy6rnMz60QQaOmyfnzl/S+Yyfvkh/nER4jQqFsfGSnX8clTf7TpRTys8Eps388qvnOZsk0e3/D0gQSH/0ypgHJEACJBDLCVBZjuUXmM3zTwBKJpRPSFq1BEtkkiNzWh0FoyeYQ2rk73/+UfNpL+rDnGqEIxCp80op2bp0hF6v85har3L3ilHarA5p44Wb++XIFmZltWzVFmvfuYM1oTEP89jPE+X05ilqHdDR1tJqxnQQacyI7qYdB7yysDurgSm4P4FimLVUGzVC9JP1gQBmxoun9dLJ8inPrUZmjmgvB9eM038rZvQ2wZIzi4fj3kOeUfaqLzytTa2xfjj2IVt3HtDb6Pz8tPWPCCPT0bmGOW3XY6kacbXLZjU67pQk4XPa0ytFzHDAFqbFkKSOF1VnenOMPoqXfSMfTV/mNW84GOYDxnqUFXwYgaf2wz99rNfKxei0U4zFgQmfv+z2XPpcWT0e4qPap37b6XlZR974YGPa9+CD8XVxA5QHeTPqi1HmfapPY01hzJO1SyD3kT3+jj2eDxUmbG34RyUcR3ct22D7B0zq+3dtpNftPbNZrdur+gYsNsw9Gy+u5190Tpup9dff/mKqrrdHTpz3OrY/M2BCb+93GLmHZAz/GOeVUB0E+zx0psfx0Ame/oU2NA6f1mGsBOCQC9c6pgQfbfAxxZim47ncXo3Ufz5/ZYQiYvpZEKEAR0Bk9xk+1nyzcqtOBb8OMKvG+s2Na5V35OR9WCBvZivg6+9+tvaxsyFcAU4W/kHPfnLbniP2Q9mmPhpB4sb1jG7r/QD7o07IHxIgARIIEQJUlkPkQrOZvglcVt7NIW5z/5yp/lXOkCAXr9xWlE0cjNBB4qq5h5FJ1fJF5aN3mgiUKDiJwVf/GQvWCswH7fJYuKkrwq7duO30yh4H8xOXTu0ePg8zvhw8ekY5UPrFGmWwxzX7TiUI4eajgXlBN3HdthhNxZqf2ZQJMsqDYHmTREo5fFTNnTOCl+Nd+yL+ob2QzgOma4Ubzm2gJGxfNlywj7o07TrGZONza0aufEUwo9T289G5hvbyzp67ZM9WO1TzClAHZq4t5qS7cViz6XdnEtfjF5TpNkyRfwt/4W1e+wXN2kQOhjk89sM0d2P4SDiUZqyVu2nRUMs6wOQbL3wEyxzbl6l6IHzuvTkXTJ8yirFJa9+afrhn72HJVbadzFn2i+4jUL7gJO2X+YMkZ7YMOkmg95E9f+d+Ktu6y8afgDNOoMfB9o+xA1tJyzpltGfzP/+6IT9t+UM+mbPauhdNuQ+FW7/gGB6o7XJNWW7YJYHt/jtz4bJrv/vRT78L5nloL9fsY6TT3N9NapYWfACDTwTIiCmLTbQY2WJaQEM1hQDm+TBNh7MtjKC7SUw/C9zKsIcFcp81enO4YHqGMe9OqpZzHKocB878qLM9K6/9f/79Vx/jPsFz2C7//OP+PwJxzp67bI9q7Zv7DQGB9kcrMXdIgARIIAQIeD7hh0BD76UmJkzwsDIB9H7huZfqF2p12aEUt2fzZ9NOjjAndOtvf/hEsG7LHsmT/XFJlfS2MykT2Thg2X/ktAmyts41c9/vWlefw7xXvODB3BVSrdwEvTU/23cfMLtStEAOV2/VLW0mji82G2x5psYoXI5Maaz02Dl8/IzyjptKOxazn8BonRnN+u33w/ZTfvcxOoI1pD/u/4aOlzNrmGyG+axyRAQZOnGRWsc7onmvPql+duw5qM1h8ZK47/ApuaTuC4z89Rv1hTYXNPH+VR8UIHCqY7zc4vjJPP5HwRHHKVG9hshn5x+e0RjsVy5dQOYtuT3/MrvykOuUC2pdd8zvvvzXNSlevZvzdNDHddsPl62Lhmgz9xkj35SqTd7TeQTDHAlguly+QV9JlTKpTFRz4osXzKE/UlQqU8jyFo54+HBhFzhkMwKP3pCo9Ck4bfMlph/iPJSBN97+SCvxvTvW1s7FMJrYteUr8nrnURLofWQvK3smj4myCSsbvhwajg8qk+XoSDD9A4p5zYpFdHHwbP/MS130Pka34XjJLrv2HrMOSxfPJ0tW3B5dxrrbdsHax0bWb9knDTsOM4cBbYN5HvrKcLhSiif0byZZw1JKy/oVdTRYCcxa6PtZ4Csvf+G4v5wrB/iL7zwXnWeBMy+340DuM/i3wF++vFllpvJejusJz9qYmnM9/P+CPe9lq7cInKXhPsFz2/jAQJy8OTLoqPD34JRban68m5j7LZj+6JYPw0iABEggthK4L0eWX6pQVM5umSoblDfZD3o2kVlj39Z/7/doItmyeMwb7ResVLF8Oj7i4Su3U+BZEufaNKmq/+B1FOZQKMcuOI9ycR4KLwR5L//sXZ0eW5w3x6gf0tgF6eaOd39pRt3QHuSBdKYMe3ruxzyBNr0+tjJdMqW7vu7mBQKKGeaSwcwZsuj7TXqLkZ6+ynmTkXc61bW8jH616CcTLBgtgpQMdzxjTsQPH7E7p0Z+jKLcoGYZ7cTJxMEWyiiW64F0aFxRsIQJBKavTetW1KbLKZJ6nGVhhMC8KOMlqqj6AOCUdZs9HwLgfMZ43MZLEpalgiCP79RSVG4Cr9zTRnSSQvlyWqehbHVoXMk63r5rv1rKaqs1MgYP4XC8YwQjb3aFq3XDKnpUDU64ytfvKy/U7iXteo3zUpSR1phr47o0eK2Mzg73+th+zUzWAW+DvYb2jC9d+tO6Xpj3aZxc4TmAF1yn/Lhhtw7CPOfm9StZntAR+ETuzJJdfVwIRo6qjx2Tvlqpk2CUFUtFQYJhjn5j+hHmL2IpISPpw0cAzTGuF56rMNHGvYAlviDoJ+vClwuLTp8y5bhtsfwSFAgI5vVjuSosfwRJGe4VPdD7SCcK/4GXephuoy/BcVYJ9aEAglFY+yhbePSgNsH0D8zjN/Lbbs9HGDD+oHsjE2xtV6371dp/s0llvY/7Fh7QnR80oGCZ+bLliisvzsopoRG0uULpQmIffTbnzDaY56FJ49zOWfSjNqFHeS3qlNWnlyglL7p8neVE9zg6z4LIyo7sPoOHf/RD4/F86/a9gukVRh4Kn45gjs325027LY54bqMfQIoXeUJ7u8b+2o2/YxOUBNMfg8qYkUmABEjgPicQ/36s/4Kl65SXk5YyZfYqa81WKJZYkmb9nP7aw6qOE964lWs984JWqrUrT5w659VkvAhiVOvVVu97hRd8Mrta/ieXV9joKQv10jdblLdeMzKMeavl6vbW8ZBm+fSe0lV5s9ykHDBBEGaXapWKScEnMmmlHg5a7IK6zVTehrHcz7oNu6wy7HG4H/ME8GV+7GffSivlmAsmqVNU30L/wkgIjiHwIgoHUehLmGeGpZfaqqWfmr1WSp835pcYIbKPNn6nvGRjOQ8oNnDQFE8tgVOr/Ujl0OqglCmaV48iHFg7Xh5Q4SYPnaHtp/uQmTKqd2OtsGxbPFQrayYuHC8tVcopltPBi+ne1WO1mSb6tJvAkVLZYp5y543rrM2+H37wQcthzMezVmqHMW5p06VOrtuNtkPsfHAMj+BQZvCHl752DSvoOdhwvANlWC2yJXAmg9H0tOFr2m78dS+S6tFXzLM2gjxW/LRTOr83Wc9xnLv4J+nZupo+PaxbAxnYqbblmM2kCXQb7DV05jt88mLp1uplvVTL/h+wZu3fPuvSpud4dW1G6w8pAzvXlv6damlFBnOV8cFl2ORF0l+Nogcj3QZMk1pViuryJw1sLlme36rXRg6U+ftv1xH8wTT8lDKZTZMiqS4e1/PTuRFNWJu+Wko9k0rq62buB6zXC3NbSHT6lM7Ax0//t2rr+agw2T6qno3J1QciM696yIQFOlUw95EpBvcJpkAMU06V4CgJx5B+o+aYKNHaBto/8JEMc2yx9Bk81pdY+ZEkS5TQWmrNXol9B49rj/H4yFVIKfvH1k9Uo+3xXeMiXeMuY2TR5P/p59ecsW/pZwbWOcdHNrS5WM1esttmJWEvK5jnoT2dfR9K8WLlYwHPPtNn+o+OGb72cqK7H91ngb/yI7vPiqnlBdEP8XdRLQH4l3LwmDpFIp0lnpd2nxj2cuCxumO/aTKydyPt++CI6gvXbtzQzwPEw33crvftD8D2tP72g+mP/vLhORIgARKIbQTuy5Flt4sA5RXmeivU8jTDujcIaFQWI3l4EYSHSKdA2Z39zRpncIRjoxRHOBEe4DzfsHop/dJjXxrIV1qG3z0CPd+fLq+1He41uoSXPLz0YcRpk/KaawRmjZhHCYUOSiv+EA9L7JSo0d1E09sBY+YI5u1C8KIPBzt4+W/+vzF6fiL2sT4m8sB8VCzhA1HZWYI5eHBaA+UGYhRlHMMEFt5TZ369Tr8Qo85QlPHyhXmpzpEcjDo9q8yB4REYSivKxsszXrDe/WiOdBvwiS7D7WfvwRPaRBrthpiXYOSDeZZ12gy1kr0z7DN5a+AMq84wRTYK/MZwL8cYEWlUo5SVxr4DVlh/dN7H/9PBeIHvNuRzXWcEQNEEu/Gfr9B1QpiZy4d9I3aOJgzbYK6hPR32h4yfIxO+/F6zhUkw6oI1uuu++aGOektuXzywylfpLc0b18I4JEIaWAz8ss23yf+/9srb9vGybJaWQV/4qF9zXW4gzBERc8xRF9QBc0lx/aG0NeoyWntZ1pmF/2DpL0wrgEJprjeWAIP3dyPB9ClnfzR5YGtMs3FdIevhnE31LTBDPdEn0E+HTPpGVq3bpuMEcx/pBOoHy/SAPdqDdqE8LO326ZwVJkqE+wYn3OruFhZM/6itPpzhAxsE1gfQ2/FhDv4LIPY+AJN7LLEGwbUDFxxjyTjI7V6n2Cmv4RUaDbBGmNFP4EQK1xpzy8+eu6jT+PoJ9Hlo65aqfHsNRPDsMwIv/86Pw27s3MJMHm5be/lu5+1hvuIG8yww/g7gZ8IuxsTZ9GGci+w+O6Ke3bgW6H9Ygx7TeNAfMR2lXP1+9uz1vr3+6KtYKgpKNa4pnuMQ9KWCVbtoiyQdYPuxp0ewqbOdeaD90Z6X87rbiuQuCZAACdz3BHZvXy1xkuVr6P0f7j5pFkyVe4/8yhpZNtU2o7s1Wg/To4Am3C0+zKmTqOVInKPKJo3b1i0fE8+UXU4543EqyYiD85VKF1RLFJ2WPu1qSv7KnSKMHkeWhykrtmyrV/CsIzpn6YZ7pkl4YYGJ7/Xr1/WSOf4qlla9xD+klkyyzxtziw9Tu8wZ0sreA8e8XmSgMOZS88x2/XFYe6J1S2vCsJ4xlmnCy1Xhl//nWmau7BnkiOpfMN8OROAo6fTZC9YoYSBpEAeKC0yIDyklFsud+BOYKsMU+6IyYUbd4DkcArNkjLZeVw6KGr89Vpav2qQVErRz1DvNBMtSQVlKU6iJV/YwMccSN86Xb69IQRwEeg2dWZp+cvL0uQhKpjOuOc6ilrqBM67DxzxLMZnwmN76Ym7KgbnvE3kyqZfzuLL/0PEI9V81q78etYJTMsy1xvXOpPrv7+in4dfP5OXcRrVPOfMxx+g7yZSPgMNHT0WwDDJxgrmPTJqUyRNLkiSJBI7E7oQE0z/gGC91ymQB1QVLtGXP8rjs2Xc0gqd3t3bgXsmhnmc3lQPCo6rfmY9dbnHdwkw7AnkeuqW/n8Ki+izw1cbI7jOTDs80PBfw/8FtnrKJ57bFvZ4hfWrZ9fuhCGtLu8UPJCyY/hhIfoxDAiRAAvcrgfLZD8t9aYbtD/ixk2f16bw5M3gpy25poCi7CeYf5s3hmUs4e9Fany9obmn9hdV5uYSM/2y5nDh5Rkb0bCRlShTwcqbjLy3P3T0C+NIe6Av08ROe/hZZ7WBShzlpToHiYV9Cx3nefpxLLVuEkQSM0s4Z10UKVnnLflrv79rjmfsY4YSPAF+mmD6iW8F44fbnCM2KqHaguLu1/dXKRXW0nfuOy7KVG60kMC3fqqY6QFl28+4a2YcJK6MAdwK9hs7sguknJi3Mae+G+GJuysboNNYYDlRwveGsKBCJap/ylTcUCPz5k2DuI5MPljCKyWWMTL5mG0z/wFxn/AUimL8d6LVAfvBgHkx8Zx2CaYcz7f12HNVnga92BnqfReeZhns9OtfXre7B9Ee39AwjARIggdhEINYpywkTehRgzPkNRDBv1CmYxzR7TCc9n9A5x9kZN9BjzKnGXOSMj6fUSc4rL6/tGlSkshwoQMZTI7NXpU2fyYK1iwNZE/peR7Zt10HtkCZ/rgyyYHIPWa+WzXlQjYI9VziX5FNhkH6jPWu23uttYf1IgARIgARIgARIgARiH4FYpyznyR4mF5RS8fu+yE3rFny3QTtZgtdru0Mwc5kvqNHAmBI49ur43lTB2osQlAlHUjD3jSlz0piqK/O5NwnAYY+RT+f/YHbv223XgVPlyezplcO7zHrpIixfZASm2eNmfifjpi0yQdySAAmQAAmQAAmQAAmQwF0lEKuUZYze9mpbXZr+b1yEucBuVOcuXitwuAWHYEeOnXGdZ+yWLiph7RtVktJqWRwjUM4vKG+scPTV5b0pJth1i3nMbnOgXSMzMNYSaNZtgvKAG0+WKJPlQE0272UYMA/FWr9YT7SyWgIplVpf9Pip87Lv0AnZvuuAq0Ole7k9salufYZ/qdYTD5Pde4/EpmaxLSRAAiRAAiRAAiQQFIH7Ulk260a+ifVdw90yJlYOUrAcS50OyruoY0kmE79kkdyydNVm6zw8aFd7Y4A0eq2cTBjYQnk83q/nSoIgRqcPKwXaLvWre9Z3hYmoc0QYinrRpz3rz1ZUTrwwdxom3Fg7+fXanrVJ06ROYZWNfFf8tF2bZn/93Ua9LBHCkBYyfkBzmbt8g2R6PIXybHyVyrKmEto/cxdH7p39fiQEhzaxtW334/VAnTEVBX8UEiABEiABEiABEghlAvetN2z7RXMqrvZzwexD4c2RJcxSdINJy7hRI3AvesOOWkuYigRIgARIgARIgARIgARIILYQiDXesJ0jyVG9QBhpprlzVOkxHQmQAAmQAAmQAAmQAAmQAAnEHgJxY09T2BISIAESIAESIAESIAESIAESIAESiBkCVJZjhiNzIQESIAESIAESIAESIAESIAESiEUEqCzHoovJppAACZAACZAACZAACZAACZAACcQMgRj3hp0lY9qYqRlzuasE9h08flfLY2EkQAIkQAIkQAIkQAIkQAIkcC8TiHFlefn03vdye1k3HwSyPt/KxxkGkwAJkAAJkAAJkAAJkAAJkEDoEYhxZZlKV+h1IraYBEiABEiABEiABEiABEiABGIbgRhXlmMbILbnzhKYs3TDnS2AuZMACZAACZAACZAACZAACZBAFAjQwVcUoDEJCZAACZAACZAACZAACZAACZBA7CZAZTl2X1+2jgRIgARIgARIgARIgARIgARIIAoE4j2SJt87UUgXdJKSRZ+STGGp5eCRk5ItS3rJmD61pE2dXK78eVVu3Pxb51fgyexSo3Ix+fufWzr8wQfjS95cma04aVIlk4QJHlHHfwniIn3ChI/KufOXrPog78qlC0m8+PGtdDiJ8OKF88qly1d1eiuB2jHlPvrIw3L9xk19HmWVLp5f0qqtCTP5oO72chE3u8of9Tlx6pzOOmGCh6VooTzyXJG8cvX6TauO9rj2tiMRzqFtSIt2Iz/zh/NoO8pBOjsXnEMbULapd86sYV5tRZ4VSheWhI8+IsfD64h0FBIgARIgARIgARIgARIgARIgAW8CWZNfkrsysvxBzyaycdvvcvnKX7oGFUoWkGKFcsmefYclTeoUWjlEHByP/uRriaNi5cgSppTCa/Lt9J56i4TplPKYK1uYzqN762o6fou65aSgUhQhPdrXEuT96ZwVclkpnXM/7q6VRyjKCP9+zWat5OrI4T8fv99Wx0W5u/ce0eeRX7/OdXV81PvDvs2kVLF8OgXyQf2wbVCzjA5DndCexI89KmgHFFOUjfxQl6IFc8j7PZrouGgD6q7rN76bDjM/Cyd10/VNmOBROX7yrC4H+WIf6UxacKn7cgkpU6KATgoFGfHs9UZb32r+srxUoaiO06Hpy7Jw2TpTFLckQAIkQAIkQAIkQAIkQAIkQAJ+CNwVZfnCpavSu2Md2fTrHq+qQOk7cfKMNHqtnHyzYpOlFCOeM65JiJFhI0h/4OgZSaSUVEin1yvL6CkL9f4f+47ItDkrpWntcnLlylV55YVCSol9VBBuBIrkgSOnrTCMzOJ8N6XMjp2+VNcHZXT74DP5oFt9k0xv123YZR2bOm3YuluHFcqXU7bs2G+NMk//aoUUyJvZUuoRCeVcuPynlQcU+pXrd0iNKsV1OjNCjQjYd/KYOf9HqfrC0zp9uefzy9Qvl0ul0gVl4XcbrXr3HT5ThnVvoOPkz51RK87OfPRJ/pAACZAACZAACZAACZAACZAACXgRuCvK8shJ8yVz+pTW6CpqUKpIbmnTpKpWYKHIGYVTn1OjuFAeIxOM9iZRivLKtVtdo27ffViQN5TND6cvkR9nvadHbk3ksHQpzK7fLRTbLGGprDh5c4ZJ7ZdKyNzFa60w1ANK8tAJ8yVvzgyCDwR2uXDxinWYJHFC3faBY+ZaYbVeLC6fKQW4cfXnrTB/O1B6M6VPpduT6LEEWkF2coSinzRxAp0NFP52jSpZI83+8uY5EiABEiABEiABEiABEiABEgh1AndFWYbS9mqr96VM0bwW75U/79SjwFBkV/+8Q9LbFFcom4nU/FyIXek0I8gmEyjJmZQSbsywEdfsIw6U2i07D2qz6AVL10nfD7/SI7cm/dJVm5XSnscc6i1MqC+o0euiyqzZCBT3/WoE2giU8IPHzki1SsVMkE6D+qA9GHV+pVwh6xx2kiiF9pIyDYdAcUbZg7t6RqtNmTDvRn2NybeO7Ofnw6mL5d236ui8EA1Mq5QpaKXQ+YYr7RjBr/bGAK0wWxG4QwIkQAIkQAIkQAIkQAIkQAIk4Ergrjj4wtzeePHiy2MJH5Hlq7dIkQI5JV+uDHLk5AW9P2vhD1L2+QJqlDS5JFAOqEooRfW33Ye0I6rzl/+SF8sWkStXb8jTT2UVKL2Q5nXKy/Ift8nC5etlSI/GsvfQKVm3ZY/0aFtDDh07q52JVS1bSI/0VilbWI2wPiaJE6lR6J+2W862tGOwuHGlXeMqInHiCZxiXbvxt6xRym7nN16SW7fiaEdhbzZ9UfoM+0LXp7yq56mzF2XWwtXSq92r8tBDD0mqlIkldYok8sP67bpucKCFNlZV5aKNZUvk18r0/CXrJKea31wkXzYZ/+liufjndW0mni+vatfyn2X77gOyc+8x+V+rarJ45UbJnCGtiptVM0PGSFu+RD6ZrszLIUdPnJGKpZ5WJtjf6uPDSoFv3aCSMktPoJ2kNaheWqbNXa3nTr9Rr6JcvXZTHnggvlVPnYg/JEACJEACJEACJEACJEACJEACXgTg4CtOsnwNb3mF8oAESIAESIAESIAESIAESIAESIAEQphA+eyH74437BBmzKaTAAmQAAmQAAmQAAmQAAmQAAnchwTuypzl+5ALq0wCJEACJEACJEACJEACJEACJBDCBKgsh/DFZ9NJgARIgARIgARIgARIgARIgATcCVBZdufCUBIgARIgARIgARIgARIgARIggRAmQGU5hC8+m04CJEACJEACJEACJEACJEACJOBOgMqyOxeGkgAJkAAJkAAJkAAJkAAJkAAJhDABKsshfPHZdBIgARIgARIgARIgARIgARIgAXcCVJbduTCUBEiABEiABEiABEiABEiABEgghAlQWQ7hi8+mkwAJkAAJkAAJkAAJkAAJkAAJuBOgsuzOhaEkQAIkQAIkQAIkQAIkQAIkQAIhTIDKcghffDadBEiABEiABEiABEiABEiABEjAnQCVZXcuDCUBEiABEiABEiABEiABEiABEghhAlSWQ/jis+kkQAIkQAIkQAIkQAIkQAIkQALuBKgsu3NhKAmQAAmQAAmQAAmQAAmQAAmQQAgToLIcwhefTScBEiABEiABEiABEiABEiABEnAnQGXZnQtDSYAESIAESIAESIAESIAESIAEQpgAleUQvvhsOgmQAAmQAAmQAAmQAAmQAAmQgDsBKsvuXBhKAiRAAiRAAiRAAiRAAiRAAiQQwgSoLIfwxWfTSYAESIAESIAESIAESIAESIAE3An8HyvhoTYvuq0gAAAAAElFTkSuQmCC"
+      style="margin-bottom: 15px;" />
+    <div style="font-family: Open Sans;">
+      <h2 style="font-size: 18px;">
+        Informações de risco fornecidas pelo Proponente ou Representante
+      </h2>
+      <table style="
+          width: 100%;
+          border: 1px solid #d1d1d1;
+          border-radius: 2px;
+          margin-bottom: 20px;
+          padding: 20px;
+        ">
+        <tbody>
+          <tr style="margin-bottom: 5px; display: block;">
+            <td *ngIf="quotesData.customer_type == 1" colspan="1"
+              style="color: #929aa4; font-weight: 600; font-size: 13px;">
+              <span style="width: 220px; display: inline-block;">Seguro novo ou renovação:</span>
+              <span style="font-weight: 600; color: #232323;">Seguro Novo</span>
+            </td>
+            <td *ngIf="quotesData.customer_type == 2" colspan="1"
+              style="color: #929aa4; font-weight: 600; font-size: 13px;">
+              <span style="width: 220px; display: inline-block;">Seguro novo ou renovação:</span>
+              <span style="font-weight: 600; color: #232323;">Renovação</span>
+            </td>
+          </tr>
+          <tr style="margin-bottom: 5px; display: block;" *ngIf="quotesData.quote_risk.risk_three == 'false'">
+            <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+              <span style="width: 220px; display: inline-block;">Companhia Anterior:</span>
+              <span style="font-weight: 600; color: #232323;">{{quotesData.quote_risk.name_of_previous_insurer}}</span>
+            </td>
+          </tr>
+          <tr style="margin-bottom: 5px; display: block;" *ngIf="quotesData.quote_risk.risk_three == 'false'">
+            <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+              <span style="width: 220px; display: inline-block;">Data Final da Vigência Anterior:</span>
+              <span
+                style="font-weight: 600; color: #232323; margin-right: 10px;">{{quotesData.quote_risk.date_of_first_contracting}}&nbsp;</span>
+              <span style="color: #232323; font-weight: 400;">(*não se aplica se for seguro novo)</span>
+            </td>
+          </tr>
+          <tr style="margin-bottom: 5px; display: block;" *ngIf="quotesData.quote_risk.risk_three == 'false'">
+            <td colspan="1" style="color: #929aa4; font-weight: 600; font-size: 13px;">
+              <span style="width: 220px; display: inline-block;">Data de Continuidade:</span>
+              <span
+                style="font-weight: 600; color: #232323; margin-right: 10px;">{{quotesData.quote_risk.continuity_Date}}&nbsp;</span>
+              <span style="color: #232323; font-weight: 400;">(*igual a data de início de vigência se for Seguro
+                Novo)</span>
+            </td>
+          </tr>
+          <tr style="margin-bottom: 5px; display: block;" *ngIf="quotesData.specialty">
+            <td colspan="1" style="
+                color: #929aa4;
+                font-weight: 600;
+                font-size: 13px;
+                display: flex;
+              ">
+              <span style="width: 275px; display: inline-block;">Especialidade:</span>
+              <span style="font-weight: 600; color: #232323;">{{quotesData.specialty ? quotesData.specialty.name :
+                ''}}</span>
+            </td>
+          </tr>
+        </tbody>
+        <hr style="border-top: 1px solid #d1d1d1;" />
+        <p style="font-size: 13px;" *ngIf="quotesData.customer_type == 2">
+          <span style="color: #929aa4; font-weight: 600;">Faturamento do último exercício consolidado</span>
+          <br /><b style="color: #232323; font-weight: 600;">{{quotesData.turnover ? quotesData.turnover.name : ''}}</b>
+        </p>
+        <p style="font-size: 13px;" *ngIf="quotesData.quote_risk && quotesData.quote_risk.risk_three == 'true'">
+          <span style="color: #929aa4; font-weight: 600;">Retroatividade de cobertura</span>
+          <br /><b style="color: #232323; font-weight: 600;">{{quotesData.retroactivity ? quotesData.retroactivity.name
+            : ''}}</b>
+        </p>
+        <p style="font-size: 13px;" *ngIf="quotesData.quote_risk && quotesData.quote_risk.risk_four == 'true'">
+          <span style="color: #929aa4; font-weight: 600;">O Proponente ja sofreu processos judiciais ou disciplinares
+            por
+            Atos Médicos NOS ÚLTIMOS 24 MESES?
+          </span>
+          <br /><b style="color: #232323; font-weight: 600;">{{quotesData.quote_risk.complaint ?
+            quotesData.quote_risk.complaint.name : ''}}</b>
+        </p>
+        <p style="font-size: 13px;" *ngIf="quotesData.quote_risk && quotesData.quote_risk.risk_five == 'true'">
+          <span style="color: #929aa4; font-weight: 600;">O Proponente tem expectativa ou já foi notificado ou informado
+            quanto a possíveis Reclamações judiciais ou extrajudiciais
+            referentes à sua prática profissional?</span>
+          <br /><b style="color: #232323; font-weight: 600;">{{quotesData.quote_risk &&
+            quotesData.quote_risk.risk_five_desc}}</b>
+        </p>
+      </table>
+      <hr style="border-top: 1px solid #d1d1d1;" />
+      <h2 style="font-size: 18px; margin-bottom: 20px;">Opções de Pagamento</h2>
+      <!-- <p style="font-size: 13px; display: flex; align-items: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26.82" height="17.496" viewBox="0 0 26.82 17.496"
+          style="margin-right: 20px;">
+          <defs>
+            <style>
+              .a1 {
+                fill: #2f66b7;
+              }
+
+              .b1 {
+                fill: #114188;
+              }
+
+              .c1 {
+                fill: #b9b28b;
+              }
+            </style>
+          </defs>
+          <g transform="translate(0 -89)">
+            <path class="a1"
+              d="M26.82,91.357v12.781a2.36,2.36,0,0,1-2.357,2.357H2.357A2.36,2.36,0,0,1,0,104.138V91.357A2.36,2.36,0,0,1,2.357,89H24.463A2.36,2.36,0,0,1,26.82,91.357Z"
+              transform="translate(0 0)" />
+            <path class="b1"
+              d="M26.82,91.357v2.671H0V91.357A2.36,2.36,0,0,1,2.357,89H24.463A2.36,2.36,0,0,1,26.82,91.357Z"
+              transform="translate(0 0)" />
+            <path class="b1" d="M269.41,91.357v2.671H256V89h11.053A2.36,2.36,0,0,1,269.41,91.357Z"
+              transform="translate(-242.59 0)" />
+            <path class="c1"
+              d="M327.6,249.786v3.352a.786.786,0,0,1-.786.786h-5.029a.786.786,0,0,1-.786-.786v-3.352a.786.786,0,0,1,.786-.786h5.029A.786.786,0,0,1,327.6,249.786Z"
+              transform="translate(-304.185 -151.619)" />
+            <g transform="translate(4.243 97.381)">
+              <path class="c1"
+                d="M89.276,249.786a.786.786,0,0,1-.786.786h-6.7a.786.786,0,0,1,0-1.571h6.7A.786.786,0,0,1,89.276,249.786Z"
+                transform="translate(-81 -249)" />
+              <path class="c1"
+                d="M89.276,313.786a.786.786,0,0,1-.786.786h-6.7a.786.786,0,1,1,0-1.571h6.7A.786.786,0,0,1,89.276,313.786Z"
+                transform="translate(-81 -309.648)" />
+            </g>
+          </g>
+        </svg>
+        Cartão de Crédito: 4 vezes sem juros ou 12 vezes com juros de 1% a.m
+      </p> -->
+      <p style="font-size: 13px; display: flex; align-items: center;">
+        <svg style="margin-right: 20px;" xmlns="http://www.w3.org/2000/svg" width="24.258" height="17.097"
+          viewBox="0 0 24.258 17.097">
+          <defs>
+            <style>
+              .ab {
+                fill: #b9b28b;
+              }
+            </style>
+          </defs>
+          <g transform="translate(0 -75.575)">
+            <g transform="translate(0 75.575)">
+              <rect class="ab" width="4.664" height="17.097" />
+            </g>
+            <g transform="translate(11.108 75.575)">
+              <rect class="ab" width="4.664" height="17.097" />
+            </g>
+            <g transform="translate(19.595 75.575)">
+              <rect class="ab" width="4.664" height="17.097" />
+            </g>
+            <g transform="translate(5.864 75.575)">
+              <rect class="ab" width="1.421" height="17.097" />
+            </g>
+            <g transform="translate(8.486 75.575)">
+              <rect class="ab" width="1.421" height="17.097" />
+            </g>
+            <g transform="translate(16.973 75.575)">
+              <rect class="ab" width="1.421" height="17.097" />
+            </g>
+          </g>
+        </svg>
+        BOLETO: até 04 vezes sem juros, ou em até 11 vezes com juros de 1,5% ao mês.
+      </p>
+      <hr style="border-top: 1px solid #d1d1d1;" />
+      <h2 style="font-size: 18px;">Data da cotação</h2>
+      <p style="font-size: 13px; margin-bottom: 50px;">
+        <b>{{quotesData.created_at | date :'d/M/yyyy'}} &nbsp;- </b>Validade: 15 dias
+      </p>
+      <div style="
+          padding: 20px;
+          font-size: 13px;
+          border: 1px solid #d1d1d1;
+          margin-top: 19rem;
+        ">
+        A aceitação do seguro estará sujeita a análise de risco. O registro deste plano na Susep não implica, por
+        parte da autarquia, incentivo ou recomendação a sua comercialização; O segurado poderá consultar a
+        situação cadastral de seu corretor de seguros no site: www.susep.gov.br , por meio do número do seu Registro
+        Susep, Nome completo, CNPJ ou CPF, Processo Susep no 15414.612655/2020-92. Recomendamos a leitura atenta das
+        condições do seguro, principalmente dos riscos cobertos e excluídos.SEGURADORA RESPONSÁVEL: FAIRFAX BRASIL
+        SEGUROS CORPORATIVOS S.A – CNPJ: 10.793.428/0001-92 – REGISTRO SUSEP: 04669.
+      </div>
+    </div>
+  </div>
+</div>
+<!--Quote PDF END-->
+
+<!--View quote details start-->
+<button class="btn btn-primary mt-3 d-none" id="viewQuoteOptionsDetail"
+  (click)="openModel(quoteDetail, 'quoteDetails')">
+  Quote Details
+</button>
+
+<ng-template #quoteDetail>
+  <div class="large-pop-up">
+    <div class="view-detail-model" *ngIf="showHideDetails">
+      <app-quote-details [quotesData]="quotesData"></app-quote-details>
+      <div class="fechar-btns mb-3">
+        <button class="btn btn-light mr-3" (click)="closeQuoteDetailModal()"
+          style="min-width:210px;height: 50px;">FECHAR</button>
+        <button class="btn btn-primary" (click)="addProposal()" [attr.disabled]="buttonblock ? '' : null ">EMITIR
+          APÓLICE</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<!--View quote details end-->
+
+<button type="button" id="quoteHistoryModal" class="btn btn-primary d-none" data-toggle="modal"
+  data-target="#exampleModal">
+  Launch demo modal
+</button>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog bg-white">
+    <div class="modal-content quote-history-list">
+      <div class="modal-header bg-primary" style="border-radius: 0;">
+        <h3 class="modal-title text-white" id="exampleModalLabel" style="font-size: clamp(24px, 2vw, 2rem);">Histórico
+          de edição</h3>
+        <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">
+          <img src="../../../../assets/images/close-button.svg" alt="" />
+        </button>
+      </div>
+      <div class="modal-body">
+        <table id="quote-list-history" style="width: 100%;" cellspacing="0"></table>
+      </div>
+    </div>
+  </div>
+</div>

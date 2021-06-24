@@ -1,0 +1,21 @@
+ul.validation-errors {
+  font-size: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.removeicons .ngx-select__clear.btn.btn-link {
+  display: none;
+}
+.removeicons .dropdown-toggle {
+  display: none ;
+}
+
+.select-boxes-option {
+  position: relative;
+  width: 200px;
+}
+.highcharts-credits {
+  display: none;
+}

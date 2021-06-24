@@ -1,0 +1,148 @@
+.form-header {
+  border: 1px solid #B1B1B1;
+  border-radius: 4px;
+  padding: 20px 10px;
+}
+
+.product-chose {
+  background-color: #EBEBEB;
+  border-radius: 4px;
+  padding: 10px;
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.option-row {
+  border-bottom: 1px solid #EBEBEB;
+  padding: 10px;
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.description-cover {
+  background-color: #EBEBEB;
+  border-radius: 4px;
+  padding: 18px 36px;
+  margin-top: 28px;
+}
+
+.options {
+  p {
+    font-size: 13px !important;
+  }
+}
+
+.modal-social-icons {
+  list-style-type: none;
+
+  li {
+    margin: 0 10px;
+  }
+}
+
+.header-quotes {
+  margin-top: -20px;
+  color: #fff;
+  margin-left: -40px;
+  margin-right: -40px;
+
+  .btn {
+    background-color: transparent;
+    border-color: transparent;
+    color: #fff;
+  }
+}
+
+.copy-link {
+  background-color: #F3F3F3;
+  border-radius: 6px;
+  padding: 11px 10px;
+  margin-top: 13px;
+  margin-bottom: 30px;
+
+  @media(max-width:767px) {
+
+    .col-md-3,
+    .col-md-9 {
+      text-align: center !important;
+    }
+  }
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.modal-header {
+  height: 120px;
+  padding: 20px 40px;
+
+  h3 {
+    align-self: center;
+  }
+
+  .btn {
+    align-self: flex-start;
+  }
+}
+
+#pdf {
+  overflow: hidden;
+  height: 0;
+}
+
+#quotePdf {
+  .product-chose {
+    background-color: #EBEBEB;
+    border-radius: 4px;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+
+    span {
+      font-weight: 600;
+      font-size: 15px;
+    }
+  }
+
+  .option-row {
+    border-bottom: 1px solid #EBEBEB;
+    padding: 10px;
+
+    span {
+      font-size: 15px;
+    }
+  }
+
+  .description-cover {
+    background-color: #EBEBEB;
+    border-radius: 4px;
+    padding: 18px 36px;
+    margin-top: 28px;
+  }
+
+  .options {
+    h2 {
+      color: #AFAFAF;
+      font-size: 12px;
+      font-weight: 600;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      span {
+        font-size: 15px;
+        font-weight: 600;
+      }
+    }
+  }
+}

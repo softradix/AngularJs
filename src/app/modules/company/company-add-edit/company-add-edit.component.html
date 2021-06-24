@@ -1,0 +1,139 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<div class="body-wrapper">
+    <div class="title mb-5">
+        <h2>{{pageTitle}}</h2>
+        <p>
+            Preencha os dados para cadastrar um novo companhia.
+        </p>
+    </div>
+    <div class="row no-gutters justify-content-md-between h-100">
+        <div class="col-md-8">
+            <form [formGroup]="companyEditForm" (ngSubmit)="addEditQuotesButtonClicked(pageMode)">
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Nome do Responsável <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Pedro" formControlName="name" />
+                        <show-errors [control]="companyEditForm.controls.name"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Sobrenome do Responsável </label>
+                        <input type="text" class="form-control" placeholder="Gonçalves" formControlName="surname" />
+                        <!-- <show-errors [control]="userEditForm.controls.surname"></show-errors> -->
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Razão Social <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Digite a Razão Social"
+                            formControlName="company_name" />
+                        <show-errors [control]="companyEditForm.controls.company_name"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">CNPJ <span class="color-red">*</span></label>
+                        <input [textMask]="{mask: maskcnpj}" type="text" class="form-control"
+                            placeholder="99.999.999/9999-90" formControlName="cnpj" (blur)="cnpjValidate(companyEditForm.value.cnpj)"/>
+                        <show-errors [control]="companyEditForm.controls.cnpj"></show-errors>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Número do Registro <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="999"
+                            formControlName="company_reg_no" />
+                        <show-errors [control]="companyEditForm.controls.company_reg_no"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <app-date-picker [datePickerParams]="
+                            { 
+                            name: 'text',
+                            class: 'datepicker', 
+                            placeholder: 'Data de Fundação',
+                            formControlName: 'company_foundation_year',
+                            label: 'Data de Fundação',
+                            id: 'company_foundation_year',
+                            mode: '',
+                            formGroup:'filteredRecordForm',
+                            readonly: true,
+                            value: companyFoundationYear,
+                            required: true,
+                            showFutureDate: false
+                            }" (getSelectedDate)="setDatePickerValueOnChange('company_foundation_year', $event)">
+                        </app-date-picker>
+                        <show-errors [control]="companyEditForm.controls.company_foundation_year"></show-errors>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Email <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Digite seu endereço de e-mail"
+                            formControlName="email" />
+                        <show-errors [control]="companyEditForm.controls.email"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Telefone <span class="color-red">*</span></label>
+                        <input [textMask]="{mask: mask}" type="text" class="form-control" id="phone"
+                            placeholder="(21) 27575-7777" formControlName="phone" />
+                        <show-errors [control]="companyEditForm.controls.phone"></show-errors>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 pr-0">
+                        <label for="">CEP <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="806" formControlName="zipcode"
+                            (blur)="getAddress(companyEditForm.value.zipcode)" />
+                        <show-errors [control]="companyEditForm.controls.zipcode"></show-errors>
+                    </div>
+
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Endereço <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Avenida das Americas"
+                            formControlName="company_address" />
+                        <show-errors [control]="companyEditForm.controls.company_address"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Número <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="806" formControlName="address_number" />
+                        <show-errors [control]="companyEditForm.controls.address_number"></show-errors>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Complemento</label>
+                        <input type="text" class="form-control" id="" placeholder="Complemento"
+                            formControlName="company_address_addinfo" />
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Bairro <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Barra da Tijuca"
+                            formControlName="district" />
+                        <show-errors [control]="companyEditForm.controls.district"></show-errors>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">UF <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Digite seu UF" formControlName="state" />
+                        <show-errors [control]="companyEditForm.controls.state"></show-errors>
+                    </div>
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Cidade <span class="color-red">*</span></label>
+                        <input type="text" class="form-control" placeholder="Digite seu cidade"
+                            formControlName="city" />
+                        <show-errors [control]="companyEditForm.controls.city"></show-errors>
+                    </div>
+                </div>
+        <!--         <div class="row mb-3">
+                    <div class="col-sm-6 pr-0">
+                        <label for="">Comissão </label>
+                        <input type="text" class="form-control" placeholder="Comissão" formControlName="commission" />
+                    </div>
+                </div> -->
+                <div class="mt-4 mb-3"><button class="btn btn-primary register-btn" type="submit">SALVAR
+                        ALTERAÇÕES</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

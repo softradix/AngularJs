@@ -1,0 +1,102 @@
+<app-loader *ngIf="showLoader"></app-loader>
+<form [formGroup]="productForm" (ngSubmit)="updateQuote()" class="products-form">
+  <div class="row mb-4 toggle-btn-area">
+    <div class="col-md-4" *ngFor="let data of productListFilter">
+      <label for="">Produto</label>
+      <button type="button" class="btn btn-outline-primary w-100 product" [ngClass]="
+          pageMode == 'editMode' && data.id == selectedProductId ? 'active' : ''
+        " (click)="selectOption(data.id, 'product_id', 'product')" [attr.disabled]="
+          pageMode == 'editMode' && selectedProductId ? '' : null
+        " id="{{ data.id }}" title="{{ data.name }}">
+        {{ data.name }}
+      </button>
+    </div>
+  </div>
+  <div class="mb-4 profess toggle-btn-area">
+    <div class="row">
+      <div class="col-md-12">
+        <label for="">Profissão</label>
+      </div>
+      <div class="col-md-4" *ngFor="let data of professionalListFilter">
+        <button type="button" class="btn btn-outline-primary w-100 profession" [ngClass]="
+      pageMode == 'editMode' && data.id == selectedProfessionalId ? 'active' : ''" [attr.disabled]="
+      pageMode == 'editMode' && selectedProductId ? '' : null" (click)="selectOption(data.id, 'profession_id', 'profession')" id="{{ data.id }}" title="{{ data.name }}">
+          {{ data.name }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="row especialidade mb-2">
+    <div class="col-md-12">
+      <label for="">Especialidade {{productForm.value.profession_id == 2 ? ' - Procedimentos Odontológicos' : ''}}
+        <br />
+        <span *ngIf="productForm.value.profession_id == 1 && selectedCustomerType == '1'"
+          style="opacity: 0.6; font-weight: 400; font-size: 13px;">Profissional Médico atuando em quaisquer
+          especialidades
+        </span>
+      </label>
+      <div class="d-flex flex-wrap">
+        <div class="specialty-btns" *ngFor="let data of specialtyListFilter">
+          <button type="button" class="btn btn-outline-primary w-100 specilaity" [ngClass]="
+              pageMode == 'editMode' && data.id == selectedSpecilaityId
+                ? 'active'
+                : ''
+            " id="{{ data.id }}" (click)="selectOption(data.id, 'specialty_id', 'specilaity')"
+            title="{{data.description}}">
+            <span>{{ data.name }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row liability mb-3">
+    <div class="col-md-12">
+      <label for="">Selecione o limite desejado</label>
+      <div class="d-flex flex-wrap">
+        <div class="liability-btns mb-2" *ngFor="let data of liabilityListFilter">
+          <button type="button" class="btn btn-outline-primary w-100 liability-btn" [ngClass]="
+              pageMode == 'editMode' && data.id == selectedLibilityId
+                ? 'active'
+                : ''
+            " id="{{ data.id }}" (click)="selectOption(data.id, 'liability_id', 'liability-btn')"
+            title="{{ data.name }}">
+            {{ data.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row franquia mb-2">
+    <div class="col-md-12">
+      <label for="">Franquia</label>
+      <p>10% dos prejuízos indenizáveis com mínimo de</p>
+      <div class="d-flex flex-wrap">
+        <div class="deductible-btns" *ngFor="let data of deductibleListFilter">
+          <button type="button" class="btn btn-outline-primary w-100 franquia-btn" [ngClass]="
+              pageMode == 'editMode' && data.id == selectedDeductibleId
+                ? 'active'
+                : ''
+            " id="{{ data.id }}" (click)="selectOption(data.id, 'deductible_id', 'franquia-btn')"
+            title="{{ data.name }}">
+            <span style="font-size: 10.5px; width: 100%;">{{
+              data.deductible_type
+              }}</span>
+            {{ data.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-row d-inline-flex">
+    <div class="col-sm-6">
+      <button class="btn btn-outline-primary w-100 save-btn" type="button" (click)="backStep()">
+        VOLTAR PARA PROPONENTE
+      </button>
+    </div>
+    <div class="col-sm-6 pr-0">
+      <button class="btn btn-primary w-100 save-btn" type="submit">
+        PROSSEGUIR PARA DADOS DE RISCO
+      </button>
+    </div>
+  </div>
+</form>
